@@ -1,4 +1,4 @@
-<img align="right" src="https://raw.githubusercontent.com/pgyogesh/portfolio/master/src/assets/images/developerActivity.svg" width="500" height="320" />
+<img align="right" src="https://raw.githubusercontent.com/pgyogesh/portfolio/master/src/assets/images/developerActivity.svg" width="350" height="200" />
 
 # Hello, This is Yogesh 👋
 
