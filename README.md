@@ -4,7 +4,7 @@ I'm passionate Database Administrator 🚀 who strives to gain professional expe
 
 - 🔭 I’m currently working on Greenplum and PostgreSQL at Epsilon, Bangalore
 - 🌱 I’m currently learning PostgreSQL Internals and Python
-- 💬 Ask me about anything [here](https://github.com/pgyogesh/pgyogesh/issues)
+- 💬 Ask me about anything [here](https://github.com/pgyogesh/pgyogesh/issues/new)
 
 
 ---
