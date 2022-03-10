@@ -2,94 +2,96 @@
 tsbash() {
     if [[ $# -eq 0 ]] ; then
         echo 'tsbash <namespace>'
-    exit 0
-    fi
-    kubectl exec -it yb-tserver-0 -n $1 -- bash
+    else 
+        kubectl exec -it yb-tserver-0 -n $1 -- bash
+fi
 }
 
 # Login to yb-master-0
 msbash() {
     if [[ $# -eq 0 ]] ; then
         echo 'msbash <namespace>'
-    exit 0
-    fi
-    kubectl exec -it yb-master-0 -n $1 -- bash
+    else 
+        kubectl exec -it yb-master-0 -n $1 -- bash
+fi
 }
 
 # Login to any pod
 pbash() {
     if [[ $# -eq 0 ]] ; then
         echo 'pbash <pod> <namespace>'
-    exit 0
-    fi
-    kubectl exec -it $1 -n $2 -- bash
+    else 
+        kubectl exec -it $1 -n $2 -- bash
+fi
 }
 
 tsnbash() {
     if [[ $# -eq 0 ]] ; then
         echo 'tsnbash <tserver-number> <namespace>'
-    exit 0
-    fi
-    kubectl exec -it yb-tserver-$1 -n $2 -- bash
+    else 
+        kubectl exec -it yb-tserver-$1 -n $2 -- bash
+fi
 }
 
 msnbash() {
     if [[ $# -eq 0 ]] ; then
         echo 'msnbash <master-number> <namespace>'
-    exit 0
-    kubectl exec -it yb-master-$1 -n $2 -- bash
+    else
+        kubectl exec -it yb-master-$1 -n $2 -- bash
+fi
 }
 
 tscmd() {
     if [[ $# -eq 0 ]] ; then
         echo 'tscmd <namespace> <command>'
-    exit 0
-    fi
-  kubectl exec yb-tserver-0 -n $1 -- $2
+    else 
+        kubectl exec yb-tserver-0 -n $1 -- $2
+fi
 }
 
 mscmd() {
     if [[ $# -eq 0 ]] ; then
         echo 'mscmd <namespace> <command>'
-    exit 0
-    fi
-   kubectl exec yb-master-0 -n $1 -- $2
+    else 
+        kubectl exec yb-master-0 -n $1 -- $2
+fi
 }
 
 tsncmd() {
     if [[ $# -eq 0 ]] ; then
         echo 'tsncmd <tserver-number> <namespace> <command>'
-    exit 0
-    fi
+    else 
    kubectl exec yb-tserver-$1 -n $2 -- $3
+fi
 }
 
 msncmd() {
     if [[ $# -eq 0 ]] ; then
         echo 'msncmd <master-number> <namespace> <command>'
-    exit 0
-    fi
-   kubectl exec yb-master-$1 -n $2 -- $3
+    else 
+        kubectl exec yb-master-$1 -n $2 -- $3
+fi
 }
 
 ywbash() {
    kubectl exec -c yugaware -it yb-platform-yugaware-0 -n yb-platform -- bash
+
 }
 
 function cptk(){
     if [[ $# -eq 0 ]] ; then
         echo 'cptk /path/to/file <namespace> <pod> <destination-path>'
-    exit 0
-    fi
-    kubectl cp $1 $2/$3:$4
+    else 
+        kubectl cp $1 $2/$3:$4
+fi
 }
 
 function cpfk(){
     if [[ $# -eq 0 ]] ; then
         echo 'cpfk <namespace> <pod> </file/in/pod> <destination-path>'
-    exit 0
-    fi
-    kubectl cp $1/$2:$3 $4
+    else 
+        kubectl cp $1/$2:$3 $4
+fi
 }
 
 # tsh function
@@ -97,7 +99,7 @@ function cpfk(){
 tshscp() {
     if [[ $# -eq 0 ]] ; then
         echo 'tshscp <path/to/file> <ticket-number'
-    exit 0
-    fi
-    tsh scp $1 support@lincoln:cases/$2/
+    else 
+        tsh scp $1 support@lincoln:cases/$2/
+fi
 }
