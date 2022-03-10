@@ -3,6 +3,7 @@ tsbash() {
     if [[ $# -eq 0 ]] ; then
         echo 'tsbash <namespace>'
     exit 0
+    fi
     kubectl exec -it yb-tserver-0 -n $1 -- bash
 }
 
@@ -11,6 +12,7 @@ msbash() {
     if [[ $# -eq 0 ]] ; then
         echo 'msbash <namespace>'
     exit 0
+    fi
     kubectl exec -it yb-master-0 -n $1 -- bash
 }
 
@@ -19,6 +21,7 @@ pbash() {
     if [[ $# -eq 0 ]] ; then
         echo 'pbash <pod> <namespace>'
     exit 0
+    fi
     kubectl exec -it $1 -n $2 -- bash
 }
 
@@ -26,6 +29,7 @@ tsnbash() {
     if [[ $# -eq 0 ]] ; then
         echo 'tsnbash <tserver-number> <namespace>'
     exit 0
+    fi
     kubectl exec -it yb-tserver-$1 -n $2 -- bash
 }
 
@@ -40,6 +44,7 @@ tscmd() {
     if [[ $# -eq 0 ]] ; then
         echo 'tscmd <namespace> <command>'
     exit 0
+    fi
   kubectl exec yb-tserver-0 -n $1 -- $2
 }
 
@@ -47,6 +52,7 @@ mscmd() {
     if [[ $# -eq 0 ]] ; then
         echo 'mscmd <namespace> <command>'
     exit 0
+    fi
    kubectl exec yb-master-0 -n $1 -- $2
 }
 
@@ -54,6 +60,7 @@ tsncmd() {
     if [[ $# -eq 0 ]] ; then
         echo 'tsncmd <tserver-number> <namespace> <command>'
     exit 0
+    fi
    kubectl exec yb-tserver-$1 -n $2 -- $3
 }
 
@@ -61,6 +68,7 @@ msncmd() {
     if [[ $# -eq 0 ]] ; then
         echo 'msncmd <master-number> <namespace> <command>'
     exit 0
+    fi
    kubectl exec yb-master-$1 -n $2 -- $3
 }
 
@@ -72,12 +80,15 @@ function cptk(){
     if [[ $# -eq 0 ]] ; then
         echo 'cptk /path/to/file <namespace> <pod> <destination-path>'
     exit 0
+    fi
     kubectl cp $1 $2/$3:$4
 }
 
 function cpfk(){
     if [[ $# -eq 0 ]] ; then
         echo 'cpfk <namespace> <pod> </file/in/pod> <destination-path>'
+    exit 0
+    fi
     kubectl cp $1/$2:$3 $4
 }
 
@@ -87,5 +98,6 @@ tshscp() {
     if [[ $# -eq 0 ]] ; then
         echo 'tshscp <path/to/file> <ticket-number'
     exit 0
+    fi
     tsh scp $1 support@lincoln:cases/$2/
 }
