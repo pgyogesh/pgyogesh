@@ -1,0 +1,56 @@
+# Login to yb-tserver-0
+tsbash() {
+    kubectl exec -it yb-tserver-0 -n $1 -- bash
+}
+
+# Login to yb-master-0
+msbash() {
+    kubectl exec -it yb-master-0 -n $1 -- bash
+}
+
+# Login to any pod
+pbash() {
+    kubectl exec -it $1 -n $2 -- bash
+}
+
+tsnbash() {
+    kubectl exec -it yb-tserver-$1 -n $2 -- bash
+}
+
+msnbash() {
+    kubectl exec -it yb-master-$1 -n $2 -- bash
+}
+
+tscmd() {
+  kubectl exec yb-tserver-0 -n $1 -- $2
+}
+
+mscmd() {
+   kubectl exec yb-master-0 -n $1 -- $2
+}
+
+tsncmd() {
+   kubectl exec yb-tserver-$1 -n $2 -- $3
+}
+
+msncmd() {
+   kubectl exec yb-master-$1 -n $2 -- $3
+}
+
+ywbash() {
+   kubectl exec -c yugaware -it yb-platform-yugaware-0 -n yb-platform -- bash
+}
+
+function cptk(){
+    kubectl cp $1 $2/$3:$4
+}
+
+function cpfk(){
+    kubectl cp $1/$2:$3 $4
+}
+
+# tsh function
+
+tshscp() {
+  tsh scp $1 support@lincoln:cases/$2/
+}
