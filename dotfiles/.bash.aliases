@@ -1,5 +1,6 @@
 # Aliases
 
+## Kubectl
 alias sc='set_context -s'
 alias k='kubectl'
 alias kg='kubectl get'
@@ -9,4 +10,8 @@ alias kgpn='kubectl get pods -n'
 alias kgpw='kubectl get pods -o wide'
 alias kgn='kubectl get ns'
 alias kgs='kubectl get services'
+
+
+## MiniKube
+alias minikube-tunnel='nohup minikube tunnel > /dev/null 2>&1 &'
 
