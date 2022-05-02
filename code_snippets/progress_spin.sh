@@ -1,8 +1,9 @@
+PID=
 spin[0]="-"
 spin[1]="\\"
 spin[2]="|"
 spin[3]="/"
-echo -n "[Running] ${spin[0]}" && while ps -ef |grep <process_name> |grep -v grep > /dev/null
+echo -n "[Running] ${spin[0]}" && while kill -0 $PID
 do
   for i in "${spin[@]}"
   do
