@@ -103,3 +103,17 @@ tshscp() {
         tsh scp $1 support@lincoln:cases/$2/
 fi
 }
+
+spin_until_completed() {
+    if [[ $# -eq 0 ]] ; then
+        echo 'spin_until_completed <process-id>'
+    else
+        echo -n "[Running] ${spin[0]}" && while kill -0 $1
+        do
+            for i in "${spin[@]}"
+            do
+                echo -ne "\b$i"
+                sleep 0.2
+            done
+        done
+}
