@@ -108,6 +108,10 @@ spin_until_completed() {
     if [[ $# -eq 0 ]] ; then
         echo 'spin_until_completed <process-id>'
     else
+        spin[0]="-"
+        spin[1]="\\"
+        spin[2]="|"
+        spin[3]="/"
         echo -n "[Running] ${spin[0]}" && while kill -0 $1
         do
             for i in "${spin[@]}"
@@ -116,4 +120,5 @@ spin_until_completed() {
                 sleep 0.2
             done
         done
+fi
 }
