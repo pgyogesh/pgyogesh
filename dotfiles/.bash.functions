@@ -112,7 +112,7 @@ spin_until_completed() {
         spin[1]="\\"
         spin[2]="|"
         spin[3]="/"
-        echo -n "[Running] ${spin[0]}" && while kill -0 $1
+        echo -n "[Running] ${spin[0]}" && while kill -0 $1 2> /dev/null
         do
             for i in "${spin[@]}"
             do
