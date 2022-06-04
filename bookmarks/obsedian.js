@@ -1,4 +1,4 @@
-// When clicked on this bookmark, it will opene the obsedian node for the ticket for the zendesk url. If tab is not zendesk,
+// When clicked on this bookmark, it will open the obsedian node for the ticket for the zendesk url. If tab is not zendesk,
 // it will prompt to enter the ticket number.
 javascript:if (window.location.href.indexOf('yugabyte.zendesk.com') === -1) {
     var ticket = prompt('Please enter your ticket number');

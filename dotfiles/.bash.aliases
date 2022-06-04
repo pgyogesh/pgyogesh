@@ -10,6 +10,8 @@ alias kgpn='kubectl get pods -n'
 alias kgpw='kubectl get pods -o wide'
 alias kgn='kubectl get ns'
 alias kgs='kubectl get services'
+alias kge='kubectl get events'
+alias 'kubectl get events'='kubectl get events --sort-by=.metadata.creationTimestamp'
 
 
 ## MiniKube
