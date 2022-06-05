@@ -138,6 +138,7 @@ gpush_notes() {
             git commit -m "$1"
             echo "Pushing changes to Gitlab"
             git push
+            cd -
         else
             echo 'No changes made'
         fi
