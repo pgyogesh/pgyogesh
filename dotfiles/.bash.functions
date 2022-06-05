@@ -128,7 +128,7 @@ gpush_notes() {
         echo 'No commit message provided'
     else
         # get input from user
-        echo "Have you updated the TOC? (y/n)"
+        echo "Have you updated the TOC? (y/n): \c"
         read response
         if [[ $response == 'y' ]] ; then
             cd /Users/pgyogesh/Library/Mobile\ Documents/iCloud~md~obsidian/Documents/my_notes/
