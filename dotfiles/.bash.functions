@@ -122,3 +122,21 @@ spin_until_completed() {
         done
 fi
 }
+
+gpush_notes() {
+    if [[ $# -eq 0 ]] ; then
+        echo 'No commit message provided'
+    else
+        check=input('Have you updated TOC? (y/n)')
+        if [[ $check == 'y' ]] ; then
+            cd /Users/pgyogesh/Library/Mobile\ Documents/iCloud~md~obsidian/Documents/my_notes/
+            echo "Adding files to git"
+            git add . --quite
+            echo "Committing changes"
+            git commit -m "$1" --quite
+            echo "Pushing changes to Gitlab"
+            git push --quiet
+        else
+            echo 'No changes made'
+        fi
+}
