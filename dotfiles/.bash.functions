@@ -139,4 +139,5 @@ gpush_notes() {
         else
             echo 'No changes made'
         fi
+fi
 }
