@@ -127,8 +127,10 @@ gpush_notes() {
     if [[ $# -eq 0 ]] ; then
         echo 'No commit message provided'
     else
-        check=input('Have you updated TOC? (y/n)')
-        if [[ $check == 'y' ]] ; then
+        # get input from user
+        echo "Have you updated the TOC? (y/n)"
+        read response
+        if [[ $response == 'y' ]] ; then
             cd /Users/pgyogesh/Library/Mobile\ Documents/iCloud~md~obsidian/Documents/my_notes/
             echo "Adding files to git"
             git add . --quite
