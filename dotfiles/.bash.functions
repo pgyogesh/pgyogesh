@@ -135,7 +135,7 @@ gpush_notes() {
             echo "Adding files to git"
             git add .
             echo "Committing changes"
-            git commit -m "$1"
+            git commit -m "$@"
             echo "Pushing changes to Gitlab"
             git push
             cd -
