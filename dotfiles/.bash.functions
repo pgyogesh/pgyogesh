@@ -78,6 +78,11 @@ ywbash() {
 
 }
 
+ywbashp() {
+   kubectl exec -c postgres -it yb-platform-yugaware-0 -n yb-platform -- bash
+
+}
+
 function cptk(){
     if [[ $# -eq 0 ]] ; then
         echo 'cptk /path/to/file <namespace> <pod> <destination-path>'
