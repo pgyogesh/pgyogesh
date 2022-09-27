@@ -7,7 +7,7 @@ I'm passionate Database Engineer 🚀 who strives to gain professional experienc
 
 
 - 🔭 I’m currently working as Tech Support Engineer at [YugaByte](https://yugabyte.com/)
-- 🌱 I’m currently learning PostgreSQL Internals and Python
+- 🌱 I’m currently learning YugabyteDB
 - 💬 Ask me about anything [here](https://github.com/pgyogesh/pgyogesh/issues/new)
 
 
