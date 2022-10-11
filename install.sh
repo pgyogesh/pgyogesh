@@ -1,10 +1,20 @@
-# Install ZSH
+# Install git
 
+echo -n "Do you want to install git? [y/n]: "
+read answer
+if [ "$answer" != "${answer#[Yy]}" ] ;then
+    echo "Installing git"
+    sudo yum install git -y
+else
+    echo "Skipping git installation"
+fi
+
+# Install ZSH
 echo -n "Do you want to install ZSH? [y/n]: "
 read answer
 if [ "$answer" != "${answer#[Yy]}" ] ;then
     echo "Installing ZSH"
-    sudo apt-get install zsh
+    sudo apt-get install zsh -y
     echo "ZSH installed"
 else
     echo "Skipping ZSH installation"
