@@ -5,8 +5,6 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# If you come from bash you might have to change your $PATH.
-export PATH=$HOME/bin:/usr/local/bin:$PATH:/Users/pgyogesh/yugabinaries/yugabyte-2.13.0.1/bin:/Users/pgyogesh/yugabyte-client-2.6/bin
 
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
@@ -111,13 +109,14 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 # Aliases
-source ~/.zsh.aliases
+if [ -f ~/.profile.aliases ]; then
+  source ~/.profile.aliases
+fi
 
 # functions
-
-source ~/git/pgyogesh/dotfiles/.bash.aliases
-source ~/git/pgyogesh/dotfiles/.bash.functions
-
+if [ -f ~/.profile.functions ]; then
+  source ~/.profile.functions
+fi
 
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f '/Users/pgyogesh/Downloads/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/pgyogesh/Downloads/google-cloud-sdk/path.zsh.inc'; fi
@@ -130,3 +129,9 @@ if [ -f '/Users/pgyogesh/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then 
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
+
+# If you come from bash you might have to change your $PATH.
+export PATH=/usr/local/bin:$PATH:$HOME/bin
+export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
+export PATH="/opt/homebrew/opt/openssl@3/bin:$PATH"
+export PATH=$PATH:/Users/pgyogesh/yugabinaries/LATEST/bin

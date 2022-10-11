@@ -128,6 +128,16 @@ spin_until_completed() {
 fi
 }
 
+
+# Cloud access
+
+cloud_access() {
+    if [[ $# -eq 0 ]]; then
+       echo "cloud_access <universe_id> <ticket/incident>"
+    else
+       tsh login --proxy=teleport.cloud.yugabyte.com:443 --bind-addr localhost:55443 --request-roles platform_admin,cluster_admin --request-reason="@cloud-teleport-approvers, I need access to $1 to perform investigation for $2 cc:@Yogesh Jadhav"
+    fi
+}
 gpush_notes() {
     if [[ $# -eq 0 ]] ; then
         echo 'No commit message provided'

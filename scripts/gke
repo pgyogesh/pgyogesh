@@ -1,0 +1,27 @@
+# check if $1 is start exists
+
+if [[ $1 == "start" ]] ; then
+    echo "Starting GKE cluster"
+    gcloud container clusters resize yb-yogesh-standard --num-nodes 2 --zone asia-south1-a -q
+    touch /tmp/gke-started
+elif [[ $1 == "start" ]] && [[ -f /tmp/gke-started ]] ; then
+    echo "GKE cluster is already running"
+fi
+
+if [[ $1 == "stop" ]] ; then
+    echo "Stopping GKE cluster"
+    gcloud container clusters resize yb-yogesh-standard --num-nodes 0 --zone asia-south1-a -q
+    rm /tmp/gke-started
+fi
+
+if [[ $1 == "status" ]] ; then 
+    if [[ -f /tmp/gke-started ]] ; then
+       echo "GKE cluster is running"
+    else
+       echo "GKE cluster is stopped"
+    fi
+fi 
+
+if [[ $1 == "notify" ]] && [[ -f /tmp/gke-started ]] ; then
+    osascript /Users/pgyogesh/scripts/notify-gke.scpt
+fi

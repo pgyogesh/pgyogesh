@@ -1,0 +1,13 @@
+if [ $1 == 'start' ]; then
+    echo "Starting GCP cluster"
+    gcloud compute instances start "yogesh-yugaware"  --project "yb-support-298620" --zone asia-south1-c
+    touch /tmp/gcp-started
+elif [ $1 == 'start' ] && [ -f /tmp/gcp-started ]; then
+    echo "GCP cluster is already running"
+fi
+
+if [ $1 == 'stop' ]; then
+    echo "Stopping GCP cluster"
+    gcloud compute instances stop "yogesh-yugaware"  --project "yb-support-298620" --zone asia-south1-c
+    rm /tmp/gcp-started
+fi
