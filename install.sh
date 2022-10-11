@@ -14,7 +14,7 @@ echo -n "Do you want to install ZSH? [y/n]: "
 read answer
 if [ "$answer" != "${answer#[Yy]}" ] ;then
     echo "Installing ZSH"
-    sudo apt-get install zsh -y
+    sudo yum install zsh -y
     echo "ZSH installed"
 else
     echo "Skipping ZSH installation"
