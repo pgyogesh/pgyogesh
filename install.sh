@@ -1,10 +1,24 @@
+# Get OS type
+os=`uname -a | awk '{print $1}'`
+if [ $os == 'Linux' ]; then
+    installer='yum'
+elif [ $os == 'Darwin' ]; then
+    installer='brew'
+elif [ $os == 'FreeBSD' ]; then
+    installer='pkg'
+elif [ $os == 'Debian' ]; then
+    installer='apt'
+else
+    echo "Unknown OS"
+fi
+
 # Install git
 
 echo -n "Do you want to install git? [y/n]: "
 read answer
 if [ "$answer" != "${answer#[Yy]}" ] ;then
     echo "Installing git"
-    sudo yum install git -y
+    sudo $installer install git -y
 else
     echo "Skipping git installation"
 fi
@@ -14,7 +28,7 @@ echo -n "Do you want to install ZSH? [y/n]: "
 read answer
 if [ "$answer" != "${answer#[Yy]}" ] ;then
     echo "Installing ZSH"
-    sudo yum install zsh -y
+    sudo $installer install zsh -y
     echo "ZSH installed"
 else
     echo "Skipping ZSH installation"
@@ -28,8 +42,7 @@ if echo "$answer" | grep -iq "^y" ;then
     # Install oh-my-zsh
     sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 else
-    echo "Exiting..."
-    exit 1
+    echo "Cancelling..."
 fi
 
 # Install powerlevel10k
@@ -40,8 +53,7 @@ if echo "$answer" | grep -iq "^y" ;then
     # Install powerlevel10k
     git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
 else
-    echo "Exiting..."
-    exit 1
+    echo "Cancelling..."
 fi
 
 # Install zsh-autosuggestions
@@ -52,8 +64,7 @@ if echo "$answer" | grep -iq "^y" ;then
     # Install zsh-autosuggestions
     git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 else
-    echo "Exiting..."
-    exit 1
+    echo "Cancelling..."
 fi
 
 # backup existing dotfiles
@@ -99,3 +110,4 @@ mkdir -p ~/bin
 ln -s ${PWD}/scripts/gcp ~/bin/gcp
 ln -s ${PWD}/scripts/gke ~/bin/gke
 ln -s ${PWD}/scripts/collect-k8spod-logs.sh ~/bin/collect-k8spod-logs.sh
+
