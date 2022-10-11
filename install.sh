@@ -21,7 +21,7 @@ else
 fi
 
 # Install oh-my-zsh
-echo -n "Do you want to install this program? [y/n] "
+echo -n "Do you want to install ohmyzsh? [y/n] "
 read answer
 if echo "$answer" | grep -iq "^y" ;then
     echo "Installing..."
@@ -33,7 +33,7 @@ else
 fi
 
 # Install powerlevel10k
-echo -n "Do you want to install this program? [y/n] "
+echo -n "Do you want to install powerlevel10k? [y/n] "
 read answer
 if echo "$answer" | grep -iq "^y" ;then
     echo "Installing..."
@@ -45,7 +45,7 @@ else
 fi
 
 # Install zsh-autosuggestions
-echo -n "Do you want to install this program? [y/n] "
+echo -n "Do you want to installzsh-autosuggestions? [y/n] "
 read answer
 if echo "$answer" | grep -iq "^y" ;then
     echo "Installing..."
@@ -55,6 +55,34 @@ else
     echo "Exiting..."
     exit 1
 fi
+
+# backup existing dotfiles
+
+if [ -f ~/.zshrc ]; then
+    echo "Backing up existing .zshrc"
+    mv ~/.zshrc ~/.zshrc.bak
+fi
+
+if [ -f ~/.p10k.zsh ]; then
+    echo "Backing up existing .p10k.zsh"
+    mv ~/.p10k.zsh ~/.p10k.zsh.bak
+fi
+
+if [ -f ~/.profile.aliases ]; then
+    echo "Backing up existing .profile.aliases"
+    mv ~/.profile.aliases ~/.profile.aliases.bak
+fi
+
+if [ -f ~/.profile.functions ]; then
+    echo "Backing up existing .profile.functions"
+    mv ~/.profile.functions ~/.profile.functions.bak
+fi
+
+if [ -f ~/.myprofile ]; then
+    echo "Backing up existing .myprofile"
+    mv ~/.myprofile ~/.myprofile.bak
+fi
+
 
 # Create symlink to the dotfiles in the home directory
 ln -s ${PWD}/dotfiles/.zshrc ~/.zshrc
