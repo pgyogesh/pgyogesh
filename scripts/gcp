@@ -11,3 +11,15 @@ if [ $1 == 'stop' ]; then
     gcloud compute instances stop "yogesh-yugaware"  --project "yb-support-298620" --zone asia-south1-c
     rm /tmp/gcp-started
 fi
+
+if [ $1 == 'status' ]; then 
+    if [ -f /tmp/gcp-started ]; then
+       echo "GCP cluster is running"
+    else
+       echo "GCP cluster is stopped"
+    fi
+fi
+
+if [ $1 == 'notify' ] && [ -f /tmp/gcp-started ]; then
+    osascript /Users/pgyogesh/scripts/notify-gcp.scpt
+fi
