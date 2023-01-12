@@ -22,7 +22,7 @@ alias create-loopbacks='for i in {1..12}; do sudo ifconfig lo0 alias  127.0.0.$i
 
 ## Yugabyte
 alias yb_stats="/Users/pgyogesh/git/yb_stats/target/release/yb_stats"
-alias lincoln="tsh ssh --proxy support-bundle.yugabyte.com support@lincoln"
+alias lincoln="ssh support@lincoln"
 
 ## Automation
 alias gke="/Users/pgyogesh/scripts/gke"

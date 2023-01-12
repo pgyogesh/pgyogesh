@@ -1,2 +1,3 @@
 source ~/.profile.aliases
 source ~/.profile.functions
+export PATH=$PATH:/Users/pgyogesh/yugabinaries/LATEST/bin:~/scripts/
