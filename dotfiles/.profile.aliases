@@ -21,8 +21,10 @@ alias minikube-tunnel='nohup minikube tunnel > /dev/null 2>&1 &'
 alias create-loopbacks='for i in {1..12}; do sudo ifconfig lo0 alias  127.0.0.$i up; done'
 
 ## Yugabyte
-alias yb_stats="/Users/pgyogesh/git/yb_stats/target/release/yb_stats"
-alias lincoln="ssh support@lincoln"
+alias lincoln="LC_ALL=en_US.UTF-8 \
+LANG=en_US.UTF-8 \
+LANGUAGE=en_US.UTF-8 \
+mosh support@lincoln"
 
 ## Automation
 alias gke="/Users/pgyogesh/scripts/gke"

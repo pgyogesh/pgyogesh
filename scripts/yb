@@ -1,0 +1,96 @@
+#!/bin/bash
+set -e
+# the createLoopBack function
+createLoopBack() {
+  for i in {2..5}; 
+    do 
+      # check if loopback interface does not exist
+      if ! ifconfig lo0 | grep -q "127.0.0.$i"; then
+        sudo ifconfig lo0 alias  127.0.0.$i up; 
+        echo "Created loopback interface 127.0.0.$i"
+      fi
+    done
+}
+
+# the create function
+create() {
+  createLoopBack
+  echo "Creating YugabyteDB cluster"
+  mkdir -p $HOME/yugadata/node-2 $HOME/yugadata/node-3 $HOME/yugadata/node-4
+
+  # Start first instance
+  echo "Starting instance 1:- host: 127.0.0.2 base_dir: $HOME/yugadata/node-2"
+  yugabyted start \
+    --base_dir=$HOME/yugadata/node-2 \
+    --advertise_address=127.0.0.2 > /dev/null
+
+  # Join other instances
+  for i in {3..5}; do
+    echo "Starting and joining instance $i:- host: 127.0.0.$i base_dir: $HOME/yugadata/node-$i"
+    yugabyted start \
+      --base_dir=$HOME/yugadata/node-$i \
+      --join=127.0.0.2 \
+      --advertise_address=127.0.0.$i > /dev/null
+  done
+
+  # Get the status
+  yugabyted status --base_dir=$HOME/yugadata/node-2
+}
+# the start function
+start() {
+  createLoopBack
+  echo "Starting YugabyteDB"
+  for i in {2..5}; do
+    echo "Starting instance $i:- host: 127.0.0.$i base_dir: $HOME/yugadata/node-$i"
+    yugabyted start \
+      --base_dir $HOME/yugadata/node-$i \
+      --background=true > /dev/null
+  done
+  # Get the status
+  yugabyted status --base_dir=$HOME/yugadata/node-2
+}
+
+# the Stop function
+stop() {
+  echo "Stopping YugabyteDB"
+  for i in {2..5}; do
+    yugabyted stop \
+    --base_dir $HOME/yugadata/node-$i
+  done
+}
+
+# the destroy function
+destroy() {
+  echo "Destroying YugabyteDB"
+  for i in {2..5}; do
+    yugabyted destroy --base_dir $HOME/yugadata/node-$i
+  done
+  rm -rf $HOME/yugadata
+}
+
+# the status function
+status() {
+  yugabyted status --base_dir=$HOME/yugadata/node-2
+}
+
+case "$1" in
+  create)
+    create
+    ;;
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  status)
+    status
+    ;;
+  destroy)
+    destroy
+    ;;
+  *)
+    echo "Usage: $0 create|start|stop|status|destroy"
+    exit 1
+    ;;
+esac

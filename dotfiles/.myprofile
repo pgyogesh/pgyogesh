@@ -1,3 +1,6 @@
 source ~/.profile.aliases
 source ~/.profile.functions
 export PATH=$PATH:/Users/pgyogesh/yugabinaries/LATEST/bin:~/scripts/
+export PATH="/opt/homebrew/opt/sqlite/bin:$PATH"
+export LDFLAGS="-L/opt/homebrew/opt/sqlite/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/sqlite/include"

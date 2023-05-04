@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+import fileinput
+import argparse
+import re
+
+parser = argparse.ArgumentParser(description='Habit tracker')
+parser.add_argument('-s', '--sleep', help='How many hours did you sleep last night?')
+parser.add_argument('-r', '--read', help='Did you read/learnt anything today?[yes/no]')
+parser.add_argument('-e', '--exercise', help='How many minutes did you exercise today?')
+parser.add_argument('-m', '--meditation', help='Did you meditate today?[yes/no]')
+parser.add_argument('-d', '--healthy-diet', help='Did you eat healthy today?[yes/no]')
+parser.add_argument('-w','--steps', help='How many steps did you walk today?')
+
+sleep = None
+read = None
+exercise = None
+meditation = None
+healthy_diet = None
+steps = None
+
+def get_daily_note():
+    import datetime
+    yesterday = datetime.date.today() - datetime.timedelta(days=1)
+    return yesterday.strftime("%Y-%m-%d")
+
+def get_path():
+    filename = get_daily_note() + ".md"
+    # Search for the file in the vault directory /Users/pgyogesh/Library/Mobile Documents/iCloud~md~obsidian/Documents/work_notes/Assets/Periodic
+    import os
+    for root, dirs, files in os.walk("/Users/pgyogesh/Library/Mobile Documents/iCloud~md~obsidian/Documents/work_notes/Assets/Periodic"):
+        if filename in files:
+            return os.path.join(root, filename)
+    
+if __name__ == "__main__":
+    path = get_path()
+    if path:
+        if parser.parse_args().sleep:
+            sleep = parser.parse_args().sleep
+        if parser.parse_args().read:
+            read = parser.parse_args().read
+        if parser.parse_args().exercise:
+            exercise = parser.parse_args().exercise
+        if parser.parse_args().meditation:
+            meditation = parser.parse_args().meditation
+        if parser.parse_args().healthy_diet:
+            healthy_diet = parser.parse_args().healthy_diet
+        if parser.parse_args().steps:
+            steps = parser.parse_args().steps
+        if not (parser.parse_args().sleep or parser.parse_args().read or parser.parse_args().exercise or parser.parse_args().meditation or parser.parse_args().healthy_diet or parser.parse_args().steps):
+            sleep = input("How many hours did you sleep yesterday night? ")
+            read = input("Did you read/learnt anything yesterday?[yes/no]").lower()
+            exercise = input("How many minutes did you exercise yesterday? ")
+            meditation = input("Did you meditate yesterday?[yes/no]").lower()
+            healthy_diet = input("Did you eat healthy yesterday?[yes/no]").lower()
+            steps = input("How many steps did you walk yesterday? ")
+        # Open file and replace the content
+        for line in fileinput.input(path, inplace=True):
+            if sleep:
+                sleep_re = re.compile(r"> Sleep:: \d+")
+                if sleep_re.match(line):
+                    line = "> Sleep:: " + sleep + "\n"
+            if read:
+                read_re = re.compile(r"> Reading::")
+                if read_re.match(line):
+                    line = "> Reading:: " + read + "\n"
+            if exercise:
+                exercise_re = re.compile(r"> Exercise:: \d+")
+                if exercise_re.match(line):
+                    line = "> Exercise:: " + exercise + "\n"
+            if meditation:
+                meditation_re = re.compile(r"> Meditation::")
+                if meditation_re.match(line):
+                    line = "> Meditation:: " + meditation + "\n"
+            if healthy_diet:
+                healthy_diet_re = re.compile(r"> Diet::")
+                if healthy_diet_re.match(line):
+                    line = "> Diet:: " + healthy_diet + "\n"
+            if steps:
+                steps_re = re.compile(r"> Steps:: \d+")
+                if steps_re.match(line):
+                    line = "> Steps:: " + steps + "\n"
+            print(line, end='')
+    else:
+        print("File not found")
+        exit(1)
+    # Summary
+    print("|--------------------------------------------|")
+    print("|           Habit Tracker Summary            |")
+    print("|--------------------------------------------|")
+    if read == "yes":
+        print("|Read/learnt something today                 |")
+    else:
+        print("|Didn't read/learnt anything today           |")
+    if meditation == "yes":
+        print("|Meditated today                             |")
+    else:
+        print("|Didn't meditate today                       |")
+    if sleep:
+        print("|Slept for " + sleep + " hours                           |")
+    if exercise:  
+        print("|Exercised for " + exercise + " minutes                    |")
+    if healthy_diet == "yes":
+        print("|Ate healthy today                           |")
+    else:
+        print("|Didn't eat healthy today                    |")
+    print("|--------------------------------------------|")
