@@ -125,6 +125,8 @@ echo "Creating symlink to the scripts in the bin directory"
 ln -s ${PWD}/scripts/gcp ~/bin/gcp
 ln -s ${PWD}/scripts/gke ~/bin/gke
 ln -s ${PWD}/scripts/collect-k8spod-logs.sh ~/bin/collect-k8spod-logs.sh
+ln -s ${PWD}/scripts/yb ~/bin/yb
+ln -s ${PWD}/scripts/habit-tracker ~/bin/habit-tracker
 
 echo "Done"
 
