@@ -88,19 +88,19 @@ if __name__ == "__main__":
     print("|           Habit Tracker Summary            |")
     print("|--------------------------------------------|")
     if read == "yes":
-        print("|Read/learnt something today                 |")
+        print("|Read/learnt something yesterday             |")
     else:
-        print("|Didn't read/learnt anything today           |")
+        print("|Didn't read/learnt anything yesterday       |")
     if meditation == "yes":
-        print("|Meditated today                             |")
+        print("|Meditated yesterday                         |")
     else:
-        print("|Didn't meditate today                       |")
+        print("|Didn't meditate yesterday                   |")
     if sleep:
         print("|Slept for " + sleep + " hours                           |")
     if exercise:  
         print("|Exercised for " + exercise + " minutes                    |")
     if healthy_diet == "yes":
-        print("|Ate healthy today                           |")
+        print("|Ate healthy yesterday                       |")
     else:
-        print("|Didn't eat healthy today                    |")
+        print("|Didn't eat healthy yesterday                |")
     print("|--------------------------------------------|")

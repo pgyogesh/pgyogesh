@@ -30,7 +30,7 @@ create() {
     yugabyted start \
       --base_dir=$HOME/yugadata/node-$i \
       --join=127.0.0.2 \
-      --advertise_address=127.0.0.$i > /dev/null
+      --advertise_address=127.0.0.$i --ui false > /dev/null
   done
 
   # Get the status
