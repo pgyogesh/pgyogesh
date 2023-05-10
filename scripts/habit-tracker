@@ -1,14 +1,46 @@
 #!/usr/bin/env python3
+##################################################################################
+# Obsidian Habit tracker to track the habits for the day in daily note           #
+# -----------------------------------------------------------------------------  #
+# Contents of the daily note:                                                    #
+# -----------------------------------------------------------------------------  #
+# > [!tip]+ Habit Tracker                                                        #
+# > Sleep:: 0                                                                    #
+# > Reading:: 0                                                                  #
+# > Exercise:: 0                                                                 #
+# > Meditation:: 0                                                               #
+# > Diet:: 0                                                                     #
+# > Steps:: 0                                                                    #
+# -------------------------------------------------------------------------------#
+# Habit tracker note:                                                            #
+# -------------------------------------------------------------------------------#
+# ```dataview                                                                    #
+# TABLE WITHOUT ID                                                               #
+# file.link as Date,                                                             #
+# choice(Exercise > 0, "✅", "❌") as 🏋️‍♂️,                                         #
+# choice(Steps > 8000,  "✅", "❌") as 🚶‍♂️,                                        #
+# choice(Reading = "yes", "✅", "❌") as 📚,                                      #
+# choice(Sleep >= 7, "✅", "❌") as 😴,                                           #
+# choice(Meditation = "yes", "✅", "❌") as 🧘‍♂️,                                   #
+# choice(Diet = "yes","✅", "❌") as 🥦                                           #
+# FROM "Assets/Periodic/Daily"                                                   #
+# WHERE file.day <= date(now) - dur(1day) AND file.day >= date(now) - dur(7days) #
+# SORT file.day DESC                                                             #
+# ```                                                                            #
+# Dataview plugin: https://blacksmithgu.github.io/obsidian-dataview/             #
+##################################################################################
+
 import fileinput
 import argparse
 import re
 
 parser = argparse.ArgumentParser(description='Habit tracker')
+parser.add_argument('-d', '--date', help='Date for which you want to update the habit tracker',)
 parser.add_argument('-s', '--sleep', help='How many hours did you sleep last night?')
 parser.add_argument('-r', '--read', help='Did you read/learnt anything today?[yes/no]')
 parser.add_argument('-e', '--exercise', help='How many minutes did you exercise today?')
 parser.add_argument('-m', '--meditation', help='Did you meditate today?[yes/no]')
-parser.add_argument('-d', '--healthy-diet', help='Did you eat healthy today?[yes/no]')
+parser.add_argument('-f', '--healthy-diet', help='Did you eat healthy today?[yes/no]')
 parser.add_argument('-w','--steps', help='How many steps did you walk today?')
 
 sleep = None
@@ -18,10 +50,14 @@ meditation = None
 healthy_diet = None
 steps = None
 
+
 def get_daily_note():
     import datetime
-    yesterday = datetime.date.today() - datetime.timedelta(days=1)
-    return yesterday.strftime("%Y-%m-%d")
+    if parser.parse_args().date:
+        return parser.parse_args().date
+    else:
+        yesterday = datetime.date.today() - datetime.timedelta(days=1)
+        return yesterday.strftime("%Y-%m-%d")
 
 def get_path():
     filename = get_daily_note() + ".md"

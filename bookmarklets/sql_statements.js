@@ -24,8 +24,8 @@ javascript: (function () {
                     table += "<tr><td>" + query_id + "</td><td>" + query + "</td><td>" + calls + "</td><td>" + total_time + "</td><td>" + min_time + "</td><td>" + max_time + "</td><td>" + mean_time + "</td><td>" + stddev_time + "</td><td>" + rows + "</td></tr>";
                 });
                 table += "</tbody></table>";
-                var popup = window.open("", "YSQL All Statements", "height=500,width=800");
-                popup.document.write("<html><head><title>YSQL All Statements</title><script>" + sortable + "</script><style>table{border-collapse: collapse;width: 100%;}th, td {text-align: left;padding: 8px;}th {background-color: #000041;color: white;font-style: normal;}td {border: 0.1px solid #ff6e42;}</style></head><body>" + table + "</body></html>");
+                var popup = window.open("", "YSQL All Statements", "height=auto,width=auto");
+                popup.document.write("<html><head><title>YSQL All Statements</title><style>table{border-collapse: collapse;width: 100%;}th, td {text-align: left;padding: 8px;}th {background-color: #000041;color: white;font-style: normal;}td {border: 0.1px solid #ff6e42;}</style></head><body>" + table + "</body></html>");
             }
         }
     }

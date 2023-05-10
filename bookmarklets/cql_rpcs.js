@@ -22,7 +22,7 @@ javascript: (function () {
           table += "<tr><td>" + remoteIp + "</td><td>" + keyspace + "</td><td>" + state + "</td><td>" + processedCallCount + "</td><td>" + elapsedMillis + "</td><td>" + sql_string + "</td><td>" + params + "</td></tr>";
         });
         table += "</tbody></table>";
-        var popup = window.open("", "YCQL Connections", "height=500,width=800");
+        var popup = window.open("", "YCQL Connections", "height=auto,width=auto");
         popup.document.write("<html><head><title>YCQL Connections</title><style>table{border-collapse: collapse;width: 100%;}th, td {text-align: left;padding: 8px;}th {background-color: #000041;color: white;font-style: normal;}td {border: 0.1px solid #ff6e42;}</style></head><body> <p> Remember: If SQLs are running in batch, Only one SQL is dislayed for each connection </p>" + table + "</body></html>");
       }
     }

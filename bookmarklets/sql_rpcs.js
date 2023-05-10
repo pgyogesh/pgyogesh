@@ -28,7 +28,7 @@ javascript: (function () {
                     table += "<tr><td>" + db_name + "</td><td>" + query + "</td><td>" + process_start_time + "</td><td>" + process_running_for_ms + "</td><td>" + transaction_start_time + "</td><td>" + transaction_running_for_ms + "</td><td>" + query_start_time + "</td><td>" + query_running_for_ms + "</td><td>" + application_name + "</td><td>" + backend_type + "</td><td>" + backend_status + "</td><td>" + host + "</td><td>" + port + "</td></tr>";
                 });
                 table += "</tbody></table>";
-                var popup = window.open("", "YSQL Connections", "height=500,width=800");
+                var popup = window.open("", "YSQL Connections", "height=auto,width=auto");
                 popup.document.write("<html><head><title>YSQL Connections</title><style>table{border-collapse: collapse;width: 100%;}th, td {text-align: left;padding: 8px;}th {background-color: #000041;color: white;font-style: normal;}td {border: 0.1px solid #ff6e42;}</style></head><body>" + table + "</body></html>");
             }
         }

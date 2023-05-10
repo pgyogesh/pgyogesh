@@ -18,7 +18,7 @@ javascript: (function () {
                     inbound_table += "<tr><td>" + remote_ip + "</td><td>" + state + "</td><td>" + processed_call_count + "</td></tr>";
                 });
                 inbound_table += "</tbody></table>";
-                var popup = window.open("", "JSON to Table", "height=500,width=800");
+                var popup = window.open("", "JSON to Table", "height=auto,width=auto");
                 popup.document.write("<html><head><title>yb-tserver connections</title><style>table{border-collapse: collapse;width: 100%;}th, td {text-align: left;padding: 8px;}th {background-color: #000041;color: white;font-style: normal;}td {border: 0.1px solid #ff6e42;}</style></head><body>" + inbound_table + "</body></html>");
             }
         }
