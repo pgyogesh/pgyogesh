@@ -70,6 +70,10 @@ destroy() {
 
 # the status function
 status() {
+  if ! ifconfig lo0 | grep -q "127.0.0.2"; then
+    echo "YugabyteDB is not running"
+    exit 1
+  fi
   yugabyted status --base_dir=$HOME/yugadata/node-2
 }
 
