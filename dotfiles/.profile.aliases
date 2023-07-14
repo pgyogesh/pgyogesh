@@ -29,3 +29,8 @@ mosh support@lincoln"
 ## Automation
 alias gke="/Users/pgyogesh/scripts/gke"
 alias gcp="/Users/pgyogesh/scripts/gcp"
+
+
+## Alters
+alias vi=nvim
+alias vim=nvim

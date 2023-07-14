@@ -2,7 +2,7 @@
 set -e
 # the createLoopBack function
 createLoopBack() {
-  for i in {2..5}; 
+  for i in {2..4}; 
     do 
       # check if loopback interface does not exist
       if ! ifconfig lo0 | grep -q "127.0.0.$i"; then
@@ -25,7 +25,7 @@ create() {
     --advertise_address=127.0.0.2 > /dev/null
 
   # Join other instances
-  for i in {3..5}; do
+  for i in {3..4}; do
     echo "Starting and joining instance $i:- host: 127.0.0.$i base_dir: $HOME/yugadata/node-$i"
     yugabyted start \
       --base_dir=$HOME/yugadata/node-$i \
@@ -40,7 +40,7 @@ create() {
 start() {
   createLoopBack
   echo "Starting YugabyteDB"
-  for i in {2..5}; do
+  for i in {2..4}; do
     echo "Starting instance $i:- host: 127.0.0.$i base_dir: $HOME/yugadata/node-$i"
     yugabyted start \
       --base_dir $HOME/yugadata/node-$i \
@@ -53,7 +53,7 @@ start() {
 # the Stop function
 stop() {
   echo "Stopping YugabyteDB"
-  for i in {2..5}; do
+  for i in {2..4}; do
     yugabyted stop \
     --base_dir $HOME/yugadata/node-$i
   done
@@ -62,10 +62,16 @@ stop() {
 # the destroy function
 destroy() {
   echo "Destroying YugabyteDB"
-  for i in {2..5}; do
+  for i in {2..4}; do
     yugabyted destroy --base_dir $HOME/yugadata/node-$i
   done
   rm -rf $HOME/yugadata
+}
+
+
+restart() {
+  stop
+  start
 }
 
 # the status function
@@ -87,6 +93,9 @@ case "$1" in
   stop)
     stop
     ;;
+  restart)
+    restart
+    ;;
   status)
     status
     ;;
@@ -94,7 +103,7 @@ case "$1" in
     destroy
     ;;
   *)
-    echo "Usage: $0 create|start|stop|status|destroy"
+    echo "Usage: $0 create|start|stop|restart|status|destroy"
     exit 1
     ;;
 esac
