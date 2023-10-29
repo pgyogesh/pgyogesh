@@ -42,6 +42,7 @@ $func$ LANGUAGE plpgsql;
 
 -- Table to store the bloat information
 CREATE TABLE IF NOT EXISTS gp_bloat_info (
+    sch_name text,
     tbl_name text,
     live_tuples bigint,
     all_tuples bigint,
@@ -52,7 +53,7 @@ CREATE TABLE IF NOT EXISTS gp_bloat_info (
 );
 
 -- Function to get the bloat information
-CREATE OR REPLACE FUNCTION analyze_bloat(schema_name text) RETURNS void AS $$
+CREATE OR REPLACE FUNCTION analyze_bloat(schemaname text) RETURNS void AS $$
 DECLARE
     table_name_var text;
     live_tuples bigint;
@@ -63,14 +64,14 @@ DECLARE
     last_analyzed_var timestamp;
 BEGIN
     FOR table_name_var IN
-        SELECT table_name FROM information_schema.tables
-        WHERE table_schema = schema_name
-        AND table_type = 'BASE TABLE'
+        SELECT relname 
+        FROM pg_class 
+        WHERE relkind = 'r' AND relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = schemaname) AND relstorage <> 'x'
     LOOP
-        SELECT last_analyzed FROM bloat_info WHERE table_name = table_name_var INTO last_analyzed_var;
+        SELECT last_analyzed FROM gp_bloat_info WHERE tbl_name = table_name_var INTO last_analyzed_var;
         IF last_analyzed_var IS NULL OR last_analyzed_var < now() - INTERVAL '1 day' THEN
-            SELECT * FROM get_bloat(table_name_var) INTO live_tuples, all_tuples, dead_tuples, bloat_ratio, comment;
-            INSERT INTO bloat_info VALUES (table_name_var, live_tuples, all_tuples, dead_tuples, bloat_ratio, comment, now());
+            SELECT * FROM get_bloat(quote_ident(schemaname) || '.' || quote_ident(table_name_var)) INTO live_tuples, all_tuples, dead_tuples, bloat_ratio, comment;
+            INSERT INTO gp_bloat_info VALUES (schemaname, table_name_var, live_tuples, all_tuples, dead_tuples, bloat_ratio, comment, now());
         END IF;
     END LOOP;
 END;
