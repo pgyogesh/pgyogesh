@@ -1,0 +1,145 @@
+#!/bin/bash
+set -e
+
+# the start_node and end_node variables
+# Second and third arguments are the start and end node numbers. 
+# If second is provided but not third, error out.
+
+if [ -z "$2" ]; then
+  start_node=2
+  end_node=4
+elif [ -z "$3" ]; then
+  echo "Please provide both start and end node numbers."
+  exit 1
+elif [ "$3" -le "$(($2+1))" ]; then
+  echo "Please ensure that the end node is greater than the start node plus 1."
+  exit 1
+else
+  start_node=$2
+  end_node=$3
+fi
+
+# if port 15433 is already in use, set webserver port to 15434
+if lsof -Pi :15433 -sTCP:LISTEN -t >/dev/null ; then
+  webserver_port=15434
+else
+  webserver_port=15433
+fi
+
+
+# the createLoopBack function
+createLoopBack() {
+  for node in $(seq $start_node $end_node)
+    do 
+      # check if loopback interface does not exist
+      if ! ifconfig lo0 | grep -q "127.0.0.$node"; then
+        sudo ifconfig lo0 alias  127.0.0.$node up; 
+        echo "Created loopback interface 127.0.0.$node"
+      fi
+    done
+}
+
+# the create function
+create() {
+  createLoopBack
+  echo "Creating YugabyteDB cluster"
+  for node in $(seq $start_node $end_node)
+  do
+    echo "Creating directory $HOME/yugadata/node-$node"
+    mkdir -p $HOME/yugadata/node-$node
+  done
+
+  # Start first instance
+  echo "Starting instance 1:- host: 127.0.0.$start_node base_dir: $HOME/yugadata/node-$start_node"
+  yugabyted start \
+    --base_dir=$HOME/yugadata/node-$start_node \
+    --advertise_address=127.0.0.$start_node > /dev/null
+
+  # Join other instances
+  join_node=$(($start_node+1))
+  for node in $(seq $join_node $end_node) 
+  do
+    echo "Starting and joining instance $node:- host: 127.0.0.$node base_dir: $HOME/yugadata/node-$node"
+    yugabyted start \
+      --base_dir=$HOME/yugadata/node-$node \
+      --join=127.0.0.$start_node \
+      --advertise_address=127.0.0.$node --ui false > /dev/null
+  done
+
+  # Get the status
+  yugabyted status --base_dir=$HOME/yugadata/node-$start_node
+}
+# the start function
+start() {
+  createLoopBack
+  echo "Starting YugabyteDB"
+  for node in $(seq $start_node $end_node) 
+  do
+    echo "Starting instance $node:- host: 127.0.0.$node base_dir: $HOME/yugadata/node-$node"
+    yugabyted start \
+      --base_dir $HOME/yugadata/node-$node \
+      --background=true > /dev/null
+  done
+  # Get the status
+  yugabyted status --base_dir=$HOME/yugadata/node-$start_node
+}
+
+# the Stop function
+stop() {
+  echo "Stopping YugabyteDB"
+  for node in $(seq $start_node $end_node) 
+  do
+    yugabyted stop \
+    --base_dir $HOME/yugadata/node-$node
+  done
+}
+
+# the destroy function
+destroy() {
+  echo "Destroying YugabyteDB"
+  for node in $(seq $start_node $end_node) 
+  do
+    yugabyted destroy --base_dir $HOME/yugadata/node-$node
+    rm -rf $HOME/yugadata/node-$node
+  done
+}
+
+
+restart() {
+  stop
+  start
+}
+
+# the status function
+status() {
+  if ! ifconfig lo0 | grep -q "127.0.0.$start_node"; then
+    echo "YugabyteDB is not running"
+    exit 1
+  fi
+  yugabyted status --base_dir=$HOME/yugadata/node-$start_node
+}
+
+case "$1" in
+  create)
+    create
+    ;;
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    restart
+    ;;
+  status)
+    status
+    ;;
+  destroy)
+    destroy
+    ;;
+  *)
+    echo "Usage: $0 create|start|stop|restart|status|destroy"
+    exit 1
+    ;;
+esac
