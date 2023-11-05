@@ -30,6 +30,7 @@ BEGIN
                 RAISE EXCEPTION 'Table % not found', table_name_var;
             ELSE
                 INSERT INTO gp_table_sizes VALUES(schema_name, table_name_var, pg_total_relation_size(quote_ident(schema_name) || '.' || quote_ident(table_name_var)), now());
+            END IF;
         END IF;
     END LOOP;
 END;
