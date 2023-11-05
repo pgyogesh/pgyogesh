@@ -25,12 +25,11 @@ BEGIN
         IF last_analyzed_var IS NULL OR last_analyzed_var < now() - INTERVAL '1 day' THEN
             -- raise notice 'Analyze table %', table_name_var;
             RAISE NOTICE 'Checking size for table %', table_name_var;
-            -- Raise exceptioon if table is not found
             IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = schema_name AND table_name = table_name_var) THEN
-                RAISE EXCEPTION 'Table % not found', table_name_var;
-            ELSE
-                INSERT INTO gp_table_sizes VALUES(schema_name, table_name_var, pg_total_relation_size(quote_ident(schema_name) || '.' || quote_ident(table_name_var)), now());
+                RAISE WARNING 'Table % not found', table_name_var;
+                CONTINUE;
             END IF;
+            INSERT INTO gp_table_sizes VALUES(schema_name, table_name_var, pg_total_relation_size(quote_ident(schema_name) || '.' || quote_ident(table_name_var)), now());
         END IF;
     END LOOP;
 END;
