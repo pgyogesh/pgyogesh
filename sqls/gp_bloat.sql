@@ -70,6 +70,12 @@ BEGIN
     LOOP
         SELECT last_analyzed FROM gp_bloat_info WHERE tbl_name = table_name_var INTO last_analyzed_var;
         IF last_analyzed_var IS NULL OR last_analyzed_var < now() - INTERVAL '1 day' THEN
+            -- raise notice 'Analyze table %', table_name_var;
+            RAISE NOTICE 'Checking bloat for table %', table_name_var;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = schemaname AND table_name = table_name_var) THEN
+                RAISE WARNING 'Table % not found', table_name_var;
+                CONTINUE;
+            END IF;
             SELECT * FROM get_bloat(quote_ident(schemaname) || '.' || quote_ident(table_name_var)) INTO live_tuples, all_tuples, dead_tuples, bloat_ratio, comment;
             INSERT INTO gp_bloat_info VALUES (schemaname, table_name_var, live_tuples, all_tuples, dead_tuples, bloat_ratio, comment, now());
         END IF;
