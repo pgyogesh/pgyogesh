@@ -82,3 +82,40 @@ BEGIN
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
+
+
+-- Function to get the bloat information for N number of tables which are last analyzed more than N days ago
+CREATE OR REPLACE FUNCTION analyze_bloat_n(schemaname text, num_tables integer, num_days integer) RETURNS void AS $$
+DECLARE
+    table_name_var text;
+    live_tuples bigint;
+    all_tuples bigint;
+    dead_tuples bigint;
+    bloat_ratio float;
+    comment text;
+    last_analyzed_var timestamp;
+BEGIN
+    FOR table_name_var IN
+        SELECT relname 
+        FROM pg_class 
+        WHERE relkind = 'r' AND relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = schemaname) AND relstorage <> 'x'
+    LOOP
+        SELECT last_analyzed FROM gp_bloat_info WHERE tbl_name = table_name_var INTO last_analyzed_var;
+        -- USE num_tables and num_days to control the number of tables to be analyzed
+        IF last_analyzed_var IS NULL OR last_analyzed_var < now() - INTERVAL '1 day' * num_days THEN
+            -- raise notice 'Analyze table %', table_name_var;
+            RAISE NOTICE 'Checking bloat for table %', table_name_var;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = schemaname AND table_name = table_name_var) THEN
+                RAISE WARNING 'Table % not found', table_name_var;
+                CONTINUE;
+            END IF;
+            SELECT * FROM get_bloat(quote_ident(schemaname) || '.' || quote_ident(table_name_var)) INTO live_tuples, all_tuples, dead_tuples, bloat_ratio, comment;
+            INSERT INTO gp_bloat_info VALUES (schemaname, table_name_var, live_tuples, all_tuples, dead_tuples, bloat_ratio, comment, now());
+            num_tables := num_tables - 1;
+            IF num_tables = 0 THEN
+                EXIT;
+            END IF;
+        END IF;
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql;
