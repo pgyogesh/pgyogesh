@@ -159,3 +159,23 @@ gpush_notes() {
         fi
 fi
 }
+
+nohup_generator() {
+    echo $#
+    if [ $# -lt 1 ]; then
+        echo "Usage: nohup_generator <command>"
+        return 1
+    fi
+    arguements=("$@")
+    for i in "${arguements[@]}"
+    do
+        if [[ $i == *.sql ]] || [[ $i == *.sh ]] || [[ $i == *.py ]]; then
+            file_name=$(basename $i)
+        fi
+    done
+    date_time=$(date '+%Y-%m-%d-%H-%M-%S')
+    # Generate nohup file name
+    nohup_file_name=$file_name-$date_time.nohup
+    # Generate nohup command
+    echo "nohup $@ > $nohup_file_name 2>&1 &"
+}
