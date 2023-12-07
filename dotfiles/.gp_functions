@@ -1,0 +1,31 @@
+run_vacuum_from_file () {
+    if [[ $# -eq 2 ]] ; then
+        echo 'run_vacuum_from_file vacuum_type /path/to/file'
+    else
+        for table in $(cat $2); do
+            datetime=$(date '+%Y-%m-%d %H:%M:%S')
+            echo "$datetime: Running $1 for $table"
+            if [[ $1 == "v" ]]; then
+                psql -c "vacuum $table"
+            elif [[ $1 == "vf" ]]; then
+                psql -c "vacuum full $table"
+            elif [[ $1 == "va" ]]; then
+                psql -c "vacuum analyze $table"
+            elif [[ $1 == "vfa" ]]; then
+                psql -c "vacuum full analyze $table"
+            fi
+        done
+    fi
+}
+
+run_vfa_from_file () {
+    if [[ $# -eq 0 ]] ; then
+        echo 'run_vfa_from_file /path/to/file'
+    else
+        for table in $(cat $1); do
+            datetime=$(date '+%Y-%m-%d %H:%M:%S')
+            echo "$datetime: Running vfa for $table"
+            psql -c "vacuum full analyze $table"
+        done
+    fi
+}
