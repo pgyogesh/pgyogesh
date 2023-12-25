@@ -1,6 +1,8 @@
 #!/bin/bash
-set -ex
 # the createLoopBack function
+
+#set -ex
+
 createLoopBack() {
   for i in {2..4}; 
     do 
@@ -13,7 +15,16 @@ createLoopBack() {
 }
 
 # Prepare command list if --additional-args is passed
-echo "Additional args: $ADDITIONAL_ARGS"
+
+if [[ ! -z $ADDITIONAL_ARGS ]]; then
+  echo "Additional args: $ADDITIONAL_ARGS"
+fi
+if [[ ! -z $YB_TSERVER_FLAGS ]]; then
+  echo "yb-tservers flags: $YB_TSERVER_FLAGS"
+fi
+if [[ ! -z $YB_MASTER_FLAGS ]]; then
+  echo "yb-master flags: $YB_MASTER_FLAGS"
+fi
 
 # the create function
 create() {
@@ -25,7 +36,7 @@ create() {
   echo "Starting instance 1:- host: 127.0.0.2 base_dir: $HOME/yugadata/node-2"
   yugabyted start \
     --base_dir=$HOME/yugadata/node-2 \
-    --advertise_address=127.0.0.2 --tserver_flags=$ADDITIONAL_ARGS > /dev/null
+    --advertise_address=127.0.0.2 --tserver_flags="$YB_TSERVER_FLAGS" --master_flags="$YB_MASTER_FLAGS" > /dev/null
 
   # Join other instances
   for i in {3..4}; do
@@ -33,7 +44,7 @@ create() {
     yugabyted start \
       --base_dir=$HOME/yugadata/node-$i \
       --join=127.0.0.2 \
-      --advertise_address=127.0.0.$i --tserver_flags=$ADDITIONAL_ARGS --ui false > /dev/null
+      --advertise_address=127.0.0.$i --tserver_flags="$YB_TSERVER_FLAGS" --master_flags="$YB_MASTER_FLAGS" --ui false > /dev/null
   done
 
   # Get the status
@@ -47,7 +58,7 @@ start() {
     echo "Starting instance $i:- host: 127.0.0.$i base_dir: $HOME/yugadata/node-$i"
     yugabyted start \
       --base_dir $HOME/yugadata/node-$i \
-      --background=true --tserver_flags=$ADDITIONAL_ARGS > /dev/null
+      --background=true --tserver_flags="$YB_TSERVER_FLAGS" --master_flags="$YB_MASTER_FLAGS" > /dev/null
   done
   # Get the status
   yugabyted status --base_dir=$HOME/yugadata/node-2
