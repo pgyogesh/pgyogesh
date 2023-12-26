@@ -110,11 +110,9 @@ fi
 # Create symlink to the dotfiles in the home directory
 echo "Creating symlink to the dotfiles in the home directory"
 
-ln -s ${PWD}/dotfiles/.zshrc ~/.zshrc
-ln -s ${PWD}/dotfiles/.profile.aliases ~/.profile.aliases
-ln -s ${PWD}/dotfiles/.profile.functions ~/.profile.functions
-ln -s ${PWD}/dotfiles/.p10k.zsh ~/.p10k.zsh
-ln -s ${PWD}/dotfiles/.myprofile ~/.myprofile
+for file in ${PWD}/dotfiles/*; do
+    ln -s $file ~/$(basename $file)
+done
 
 # Create bin directory in HOME
 echo "Creating bin directory in HOME"
@@ -122,11 +120,9 @@ mkdir -p ~/bin
 
 # Create symlink to the scripts in the bin directory
 echo "Creating symlink to the scripts in the bin directory"
-ln -s ${PWD}/scripts/gcp ~/bin/gcp
-ln -s ${PWD}/scripts/gke ~/bin/gke
-ln -s ${PWD}/scripts/collect-k8spod-logs.sh ~/bin/collect-k8spod-logs.sh
-ln -s ${PWD}/scripts/yb ~/bin/yb
-ln -s ${PWD}/scripts/habit-tracker ~/bin/habit-tracker
 
+for file in ${PWD}/scripts/*; do
+    ln -s $file ~/bin/$(basename $file)
+done
 echo "Done"
 
