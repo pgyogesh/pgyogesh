@@ -72,7 +72,7 @@ create() {
   echo_green "🚀 Starting instance 1:- host: 127.0.0.2 base_dir: $YUGADATA_PATH/node-2"
   yugabyted start \
     --base_dir=$YUGADATA_PATH/node-2 \
-    --advertise_address=127.0.0.2 --tserver_flags="$YB_TSERVER_FLAGS" --master_flags="$YB_MASTER_FLAGS" > /dev/null
+    --advertise_address=127.0.0.2 --tserver_flags="$YB_TSERVER_FLAGS" --master_flags="$YB_MASTER_FLAGS" $ADDITIONAL_ARGS > /dev/null
   if [ $? -eq 0 ]; then
     echo_green "... ✅ \n"
   else
@@ -82,10 +82,11 @@ create() {
   # Join other instances
   for i in {3..4}; do
     echo_green "🚀 Starting and joining instance $i:- host: 127.0.0.$i base_dir: $YUGADATA_PATH/node-$i"
+    sleep 2
     yugabyted start \
       --base_dir=$YUGADATA_PATH/node-$i \
       --join=127.0.0.2 \
-      --advertise_address=127.0.0.$i --tserver_flags="$YB_TSERVER_FLAGS" --master_flags="$YB_MASTER_FLAGS" --ui false > /dev/null
+      --advertise_address=127.0.0.$i --tserver_flags="$YB_TSERVER_FLAGS" --master_flags="$YB_MASTER_FLAGS" $ADDITIONAL_ARGS --ui false > /dev/null
     if [ $? -eq 0 ]; then
       echo_green "... ✅ \n"
     else
@@ -104,9 +105,10 @@ start() {
   echo_orange "🚀 Starting YugabyteDB \n"
   for i in {2..4}; do
     echo_green "🚀 Starting instance $i:- host: 127.0.0.$i base_dir: $YUGADATA_PATH/node-$i"
+    sleep 2
     yugabyted start \
       --base_dir $YUGADATA_PATH/node-$i \
-      --background=true --tserver_flags="$YB_TSERVER_FLAGS" --master_flags="$YB_MASTER_FLAGS" > /dev/null
+      --background=true --tserver_flags="$YB_TSERVER_FLAGS" --master_flags="$YB_MASTER_FLAGS" $ADDITIONAL_ARGS > /dev/null
     if [ $? -eq 0 ]; then
       echo_green "... ✅ \n"
     else
@@ -171,6 +173,35 @@ restart() {
   start
 }
 
+display_help() {
+    # Define some colors for output
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    BLUE='\033[0;34m'
+    NC='\033[0m' # No Color
+
+    # Print the usage message
+    echo -e "${YELLOW}Usage: $0 {create|start|stop|restart|status|destroy|recreate|help}${NC}"
+    echo -e "${BLUE}===========${NC}"
+    echo -e "${GREEN}Commands:${NC}"
+    echo -e "  ${RED}create${NC}   - Creates a new instance of YugabyteDB."
+    echo -e "  ${RED}start${NC}    - Starts the YugabyteDB instance."
+    echo -e "  ${RED}stop${NC}     - Stops the YugabyteDB instance."
+    echo -e "  ${RED}restart${NC}  - Restarts the YugabyteDB instance."
+    echo -e "  ${RED}status${NC}   - Checks if the YugabyteDB instance is running."
+    echo -e "  ${RED}destroy${NC}  - Destroys the YugabyteDB instance."
+    echo -e "  ${RED}recreate${NC} - Destroys and recreates the YugabyteDB instance."
+    echo -e "  ${RED}help${NC}     - Prints this help message."
+    echo -e "${BLUE}===========${NC}"
+    echo -e "${GREEN}Environment variables:${NC}"
+    echo -e "  ${YELLOW}YB_MASTER_FLAGS${NC} - Comma separated list of master flags."
+    echo -e "      Example: export YB_MASTER_FLAGS='ysql_num_shards_per_tserver=8,yb_num_shards_per_tserver=8'"
+    echo -e "  ${YELLOW}YB_TSERVER_FLAGS${NC} - Comma separated list of tserver flags."
+    echo -e "      Example: export YB_TSERVER_FLAGS='ysql_pg_conf_csv={statement_timeout=60000},ysql_num_shards_per_tserver=8,yb_num_shards_per_tserver=8'"
+    echo -e "  ${YELLOW}ADDITIONAL_ARGS${NC} - Additional arguments to pass to yugabyted command."
+    echo -e "      Example: export ADDITIONAL_ARGS='--secure --certs_dir=<path_to_certs_dir>'"
+}
 
 case "$1" in
   create)
@@ -214,7 +245,6 @@ case "$1" in
     verify_start
     ;;
   *)
-    echo_orange "Usage: $0 create|start|stop|restart|status|destroy"
-    exit 1
+    display_help
     ;;
 esac
