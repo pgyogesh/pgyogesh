@@ -1,6 +1,10 @@
 #!/bin/bash
 
-#set -ex
+# Check if --verbose flag is passed at the end of the command
+
+if [ "${@: -1}" == "--verbose" ]; then
+  set -ex
+fi
 
 # Colorful echo
 echo_orange() {
@@ -49,12 +53,10 @@ print_flags() {
   done | column -t -s $'\t'
 }
 
-debug_info() {
-  if [[ ! -z $ADDITIONAL_ARGS ]]; then
-    echo_blue "Additional args: $ADDITIONAL_ARGS \n"
-  fi
-  print_flags
-}
+# pring $ADDITONAL_ARGS
+if [ -n "$ADDITIONAL_ARGS" ]; then
+  echo_orange "Additional arguments: $ADDITIONAL_ARGS \n"
+fi
 
 # the is_running function
 is_running() {
@@ -63,7 +65,7 @@ is_running() {
 
 # the create function
 create() {
-  debug_info
+  print_flags
   createLoopBack
   echo_orange "🚀 Creating YugabyteDB cluster \n"
   mkdir -p $YUGADATA_PATH/node-2 $YUGADATA_PATH/node-3 $YUGADATA_PATH/node-4
@@ -72,7 +74,7 @@ create() {
   echo_green "🚀 Starting instance 1:- host: 127.0.0.2 base_dir: $YUGADATA_PATH/node-2"
   yugabyted start \
     --base_dir=$YUGADATA_PATH/node-2 \
-    --advertise_address=127.0.0.2 --tserver_flags="$YB_TSERVER_FLAGS" --master_flags="$YB_MASTER_FLAGS" $ADDITIONAL_ARGS > /dev/null
+    --advertise_address=127.0.0.2 --tserver_flags="$YB_TSERVER_FLAGS" --master_flags="$YB_MASTER_FLAGS" --cloud_location=aws.ap-south-1.ap-south-1a $ADDITIONAL_ARGS > /dev/null 
   if [ $? -eq 0 ]; then
     echo_green "... ✅ \n"
   else
@@ -81,12 +83,17 @@ create() {
 
   # Join other instances
   for i in {3..4}; do
+    if [ $i -eq 3 ]; then
+      cloud_location=aws.ap-south-2.ap-south-2a
+    else
+      cloud_location=aws.ap-southeast-1.ap-southeast-1a
+    fi
     echo_green "🚀 Starting and joining instance $i:- host: 127.0.0.$i base_dir: $YUGADATA_PATH/node-$i"
     sleep 2
     yugabyted start \
       --base_dir=$YUGADATA_PATH/node-$i \
       --join=127.0.0.2 \
-      --advertise_address=127.0.0.$i --tserver_flags="$YB_TSERVER_FLAGS" --master_flags="$YB_MASTER_FLAGS" $ADDITIONAL_ARGS --ui false > /dev/null
+      --advertise_address=127.0.0.$i --tserver_flags="$YB_TSERVER_FLAGS" --master_flags="$YB_MASTER_FLAGS" --cloud_location=$cloud_location --ui false $ADDITIONAL_ARGS> /dev/null
     if [ $? -eq 0 ]; then
       echo_green "... ✅ \n"
     else
@@ -100,7 +107,7 @@ create() {
 
 # the start function
 start() {
-  debug_info
+  print_flags
   createLoopBack
   echo_orange "🚀 Starting YugabyteDB \n"
   for i in {2..4}; do
@@ -108,7 +115,7 @@ start() {
     sleep 2
     yugabyted start \
       --base_dir $YUGADATA_PATH/node-$i \
-      --background=true --tserver_flags="$YB_TSERVER_FLAGS" --master_flags="$YB_MASTER_FLAGS" $ADDITIONAL_ARGS > /dev/null
+      --background=true --tserver_flags="$YB_TSERVER_FLAGS" --master_flags="$YB_MASTER_FLAGS" --cloud_location=aws.ap-south-1.ap-south-1a $ADDITIONAL_ARGS > /dev/null
     if [ $? -eq 0 ]; then
       echo_green "... ✅ \n"
     else
@@ -213,10 +220,10 @@ case "$1" in
     verify_start
     ;;
   start)
-    if is_running; then
+    # if is_running; then
       echo_orange "🚀 YugabyteDB is already running. Please stop it first or use restart option. \n"
-      exit 1
-    fi
+      # exit 1
+    # fi
     start
     verify_start
     ;;

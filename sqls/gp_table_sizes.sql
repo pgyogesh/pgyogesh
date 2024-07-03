@@ -34,3 +34,14 @@ BEGIN
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
+
+-- FUNCTION to get size of table
+
+CREATE OR REPLACE FUNCTION analyze_table_size(schema_name text,table_name text) RETURNS void AS $$
+DECLARE
+    size bigint;
+    last_analyzed_var timestamp;
+BEGIN
+    INSERT INTO gp_table_sizes VALUES(schema_name,table_name, pg_total_relation_size(quote_ident(schema_name) || '.' || quote_ident(table_name)), now());
+END;
+$$ LANGUAGE plpgsql;

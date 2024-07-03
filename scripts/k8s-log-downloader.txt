@@ -1,0 +1,92 @@
+#!/bin/bash
+# This script downloads logs from a k8s cluster
+
+# Setup command line arguments: --namespace, --start-date, --end-date
+#!/bin/bash
+
+# Initialize our own variables
+NAMESPACE=""
+START_DATE=""
+
+# Loop through the arguments
+while (( "$#" )); do
+    case "$1" in
+        --namespace)
+            NAMESPACE="$2"
+            shift 2
+            ;;
+        --start-date)
+            START_DATE="$2"
+            shift 2
+            ;;
+        --) # end argument parsing
+            shift
+            break
+            ;;
+        -*|--*=) # unsupported flags
+            echo "Error: Unsupported flag $1" >&2
+            exit 1
+            ;;
+        *) # preserve positional arguments
+            PARAMS="$PARAMS $1"
+            shift
+            ;;
+    esac
+done
+
+# Set positional arguments in their proper place
+eval set -- "$PARAMS"
+
+# Now you can use the variables $NAMESPACE, $START_DATE, and $END_DATE in your script
+echo "Namespace: $NAMESPACE"
+echo "Start Date: $START_DATE"
+
+# Colorful echo
+echo_green() {
+    echo -e "\033[0;32m$1\033[0m"
+}
+
+echo_red() {
+    echo -e "\033[0;31m$1\033[0m"
+}
+
+echo_yellow() {
+    echo -e "\033[0;33m$1\033[0m"
+}
+
+# Function to copy logs from a k8s pod
+function copy_logs() {
+    POD_NAME=$1
+    # Copy logs from a pod from start date
+    echo_green "Copying logs from pod $POD_NAME"
+    echo_yellow "Running kubectl exec -n $NAMESPACE $POD_NAME -- bash -c \"find /home/yugabyte/*er/logs/ -type f -newermt $START_DATE -exec tar -czf /mnt/disk0/$NAMESPACE-$POD_NAME-logs.tar.gz {} +\""
+    kubectl exec -n $NAMESPACE $POD_NAME -- bash -c "find /home/yugabyte/*er/logs/ -type f -newermt $START_DATE -exec tar -czf /mnt/disk0/$NAMESPACE-$POD_NAME-logs.tar.gz {} +" > /dev/null 2>&1
+
+    # Copy logs from the pod to the local machine
+    echo_green "Copying logs from pod $POD_NAME to local machine"
+    echo_yellow "Running kubectl cp $NAMESPACE/$POD_NAME:/mnt/disk0/$NAMESPACE-$POD_NAME-logs.tar.gz $NAMESPACE-$POD_NAME-logs.tar.gz"
+    kubectl cp $NAMESPACE/$POD_NAME:/mnt/disk0/$NAMESPACE-$POD_NAME-logs.tar.gz $NAMESPACE-$POD_NAME-logs.tar.gz > /dev/null 2>&1
+
+    # Remove the logs from the pod
+    echo_red "Removing logs from pod $POD_NAME"
+    echo_yellow "Running kubectl exec -n $NAMESPACE $POD_NAME -- bash -c \"rm /mnt/disk0/$NAMESPACE-$POD_NAME-logs.tar.gz\""
+    kubectl exec -n $NAMESPACE $POD_NAME -- bash -c "rm /mnt/disk0/$NAMESPACE-$POD_NAME-logs.tar.gz" > /dev/null 2>&1
+}
+
+# Get all yb-tserver and yb-master pods
+echo_green "Getting all yb-tserver and yb-master pods in namespace $NAMESPACE"
+PODS=$(kubectl get pods -n $NAMESPACE -o jsonpath='{.items[*].metadata.name}' | tr " " "\n" | grep -E 'yb-tserver|yb-master')
+
+# Loop through each pod and copy logs
+for POD in $PODS; do
+    echo_green "Collecting logs for pod $POD"
+    copy_logs $POD
+done
+
+# Compress all logs into a single tar file
+echo_green "Compressing all logs into a single tar file"
+tar -czf $NAMESPACE-logs.tar.gz $NAMESPACE-*-logs.tar.gz
+
+# Remove all individual log files
+echo_red "Removing all individual log files"
+rm $NAMESPACE-*-logs.tar.gz

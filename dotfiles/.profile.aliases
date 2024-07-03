@@ -26,6 +26,9 @@ LANG=en_US.UTF-8 \
 LANGUAGE=en_US.UTF-8 \
 mosh support@lincoln"
 
+## Rakuten
+alias rktn-staging="ssh -L '32005:[240b:c0e0:102:5dda:b422:2:1:0]:31886' -F ~/.ssh/config jhmgmt.stg-id-proxy.rmb-lab.jp"
+
 ## Automation
 alias gke="/Users/pgyogesh/scripts/gke"
 alias gcp="/Users/pgyogesh/scripts/gcp"
@@ -34,3 +37,7 @@ alias gcp="/Users/pgyogesh/scripts/gcp"
 ## Alters
 alias vi=nvim
 alias vim=nvim
+
+#Github Copilot
+alias ex="gh copilot explain"
+alias sg="gh copilot suggest -t shell"
