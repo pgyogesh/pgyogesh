@@ -113,6 +113,10 @@ if [ -f ~/.profile.aliases ]; then
   source ~/.profile.aliases
 fi
 
+# Private aliases
+if [ -f ~/.profile.aliases.private ]; then
+  source ~/.profile.aliases.private
+fi
 # functions
 if [ -f ~/.profile.functions ]; then
   source ~/.profile.functions

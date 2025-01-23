@@ -179,3 +179,53 @@ nohup_generator() {
     # Generate nohup command
     echo "nohup $@ > $nohup_file_name 2>&1 &"
 }
+
+# YugabyteDB
+
+# Get the leader change time
+function get_master_leader_change_time() {
+    # Add help message
+    if [[ $1 == "-h" ]] || [[ $1 == "--help" ]]; then
+        echo "Run this function in the directory which contains the node directories"
+    else
+        find . -name "*master*INFO*" | while read -r file;
+          do
+            node=$(echo $file | cut -d'/' -f2)
+            for time in $(zgrep "This master's current role is: LEADER" $file | cut -d' ' -f1,2| sed 's/ /-/g');
+              do
+                echo "$node $time" >> /tmp/leader_change_time
+              done
+            done
+        sort -k2 /tmp/leader_change_time | tee master_leader_change_time
+        echo "Leader change time saved in master_leader_change_time file"
+        rm /tmp/leader_change_time
+    fi
+}
+
+
+# Get the tablet leader change time
+function get_tablet_leader_change_time() {
+    # Add help message
+    if [[ $1 == "-h" ]] || [[ $1 == "--help" ]]; then
+        echo "Run this function in the directory which contains the node directories"
+        echo "USAGE: get_tablet_leader_change_time <tablet-id>"
+    elif [[ $# -eq 0 ]]; then
+        echo "Please provide the tablet id"
+    else
+        tablet_id=$1
+        find . -name "*tserver*INFO*" | while read -r file;
+          do
+            node=$(echo $file | cut -d'/' -f2)
+            for time in $(zgrep "T $tablet_id .*Updating active role from FOLLOWER to LEADER" $file | cut -d' ' -f1,2| sed 's/ /-/g');
+              do
+                echo "$node $time $file" >> /tmp/tablet_leader_change_time
+              done
+            done
+        sort -k2 /tmp/tablet_leader_change_time | tee tablet_leader_change_time
+        echo "Leader change time saved in tablet_leader_change_time file"
+        rm /tmp/tablet_leader_change_time
+    fi
+}
+
+
+

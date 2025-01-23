@@ -25,6 +25,8 @@ echo_red() {
 
 YUGADATA_PATH=${YUGADATA_PATH:-$HOME/yugadata}
 YUGABYTED_PATH=$(which yugabyted)
+YB_TSERVER_FLAGS="flagfile=$YUGADATA_PATH/tserver.conf"
+YB_MASTER_FLAGS="flagfile=$YUGADATA_PATH/master.conf"
 
 if [ -z "$YUGABYTED_PATH" ]; then
   echo_red "yugabyted command not found. Please ensure it's installed and in your PATH. \n"
@@ -157,7 +159,6 @@ destroy() {
     # Set terminal text to default
     tput sgr0
   done
-  rm -rf $YUGADATA_PATH
 }
 
 # the verify_start function
