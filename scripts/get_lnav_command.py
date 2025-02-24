@@ -5,6 +5,10 @@ import os
 import logging
 import tabulate
 from collections import deque
+import threading
+import itertools
+import sys
+import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-t", "--from_time", metavar= "MMDD HH:MM", dest="start_time", help="Specify start time in quotes")
@@ -12,6 +16,16 @@ parser.add_argument("-T", "--to_time", metavar= "MMDD HH:MM", dest="end_time", h
 parser.add_argument('--types', metavar='LIST', help="""Comma separated list of log types to include. \n Available types: \n\t pg (PostgreSQL), \n\t ts (TServer), \n\tms (Master)""")
 parser.add_argument("--nodes", metavar="LIST", help="Comma separated list of nodes to include. Eg: --nodes n1,n2")
 parser.add_argument("--debug", action="store_true", help="Print debug messages")
+
+# Function to display the rotating spinner
+def spinner():
+    for c in itertools.cycle(['|', '/', '-', '\\']):
+        if done:
+            break
+        sys.stdout.write('\rProcessing files ' + c)
+        sys.stdout.flush()
+        time.sleep(0.1)
+    sys.stdout.write('\rDone!     \n')
 
 def getLogFilesFromCurrentDir():
     logFiles = []
@@ -116,7 +130,11 @@ def filterLogFilesByType(file_list, types):
             filtered_files.append(file)
         else:
             removed_files.append(file)
-
+            
+    # Filter hidden files
+    file_names = [os.path.basename(file) for file in filtered_files]
+    filtered_files = [file for file in filtered_files if not file.startswith('.')]
+    
     logger.debug(f"Included files: {filtered_files}")
     logger.debug(f"Removed files: {removed_files}")
     
@@ -169,7 +187,18 @@ if __name__ == '__main__':
     for logFile in logFiles:
         if filterLogFilesByTime(logFile, startTime, endTime, skippedLogFileStartEndTimes, logFileStartEndTimes):
             logFilesForLnav.append(logFile)
-    # Print the command to be executed
+
+    # Start the spinner in a separate thread
+    done = False
+    spinner_thread = threading.Thread(target=spinner)
+    spinner_thread.start()
+    for logFile in logFiles:
+        if filterLogFilesByTime(logFile, startTime, endTime, skippedLogFileStartEndTimes, logFileStartEndTimes):
+            logFilesForLnav.append(logFile)
+    # Stop the spinner
+    done = True
+    spinner_thread.join()
+    
     # Print the log files that are skipped
     SkippedFiles = []
     print('====================Skipped Files====================')
@@ -198,8 +227,12 @@ if __name__ == '__main__':
             endTime = endTime.replace(year=current_year)
             Command.append("-c ':hide-lines-after " + endTime.strftime('%Y-%m-%d %H:%M:%S') + "'")
         print(' '.join(Command))
-        input('Press Enter to execute the command above or press Ctrl+C to exit')
-        # Execute the command
-        os.system(' '.join(Command))
+        try:
+            input('Press Enter to execute the command above or press Ctrl+C to exit')
+            os.system(' '.join(Command))
+        except KeyboardInterrupt:
+            print('Exiting...')
+            exit()
+        
     else:
         print('No log files found for the given time range')

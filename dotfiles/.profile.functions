@@ -182,6 +182,37 @@ nohup_generator() {
 
 # YugabyteDB
 
+# Get lnav command
+function run_lnav() {
+    local from_time=""
+    local to_time=""
+    local types=""
+    local nodes=""
+    local debug=""
+    local help=""
+
+    while [[ "$#" -gt 0 ]]; do
+        case $1 in
+            -t|--from_time) from_time="$2"; shift ;;
+            -T|--to_time) to_time="$2"; shift ;;
+            --types) types="$2"; shift ;;
+            --nodes) nodes="$2"; shift ;;
+            --debug) debug="--debug" ;;
+            -h|--help) help="--help" ;;
+            *) echo "Unknown parameter passed: $1"; return 1 ;;
+        esac
+        shift
+    done
+
+    python3 ~/yogesh/scripts/get_lnav_command.py \
+        ${from_time:+-t "$from_time"} \
+        ${to_time:+-T "$to_time"} \
+        ${types:+--types "$types"} \
+        ${nodes:+--nodes "$nodes"} \
+        $debug \
+        $help
+}
+
 # Get the leader change time
 function get_master_leader_change_time() {
     # Add help message
