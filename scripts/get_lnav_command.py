@@ -13,6 +13,7 @@ import time
 parser = argparse.ArgumentParser()
 parser.add_argument("-t", "--from_time", metavar= "MMDD HH:MM", dest="start_time", help="Specify start time in quotes")
 parser.add_argument("-T", "--to_time", metavar= "MMDD HH:MM", dest="end_time", help="Specify end time in quotes")
+parser.add_argument("-d", "--duration", metavar="DURATION", help="Specify duration in minutes. Eg: --duration 10m")
 parser.add_argument('--types', metavar='LIST', help="""Comma separated list of log types to include. \n Available types: \n\t pg (PostgreSQL), \n\t ts (TServer), \n\tms (Master)""")
 parser.add_argument("--nodes", metavar="LIST", help="Comma separated list of nodes to include. Eg: --nodes n1,n2")
 parser.add_argument("--debug", action="store_true", help="Print debug messages")
@@ -22,10 +23,26 @@ def spinner():
     for c in itertools.cycle(['|', '/', '-', '\\']):
         if done:
             break
-        sys.stdout.write('\rProcessing files ' + c)
+        sys.stdout.write('\r Looking for files within time range' + c)
         sys.stdout.flush()
         time.sleep(0.1)
     sys.stdout.write('\rDone!     \n')
+
+# Function to parse duration
+def parse_duration(duration):
+    if not duration:
+        return None
+    try:
+        if duration[-1] == 'm':
+            return datetime.timedelta(minutes=int(duration[:-1]))
+        elif duration[-1] == 'h':
+            return datetime.timedelta(hours=int(duration[:-1]))
+        elif duration[-1] == 'd':
+            return datetime.timedelta(days=int(duration[:-1]))
+        else:
+            raise ValueError
+    except ValueError:
+        raise ValueError("Invalid duration format. Use 'm' for minutes, 'h' for hours, and 'd' for days")
 
 def getLogFilesFromCurrentDir():
     logFiles = []
@@ -111,6 +128,10 @@ def filterLogFilesByTime(logFile, startTime, endTime, skippedLogFileStartEndTime
     finally:
         logs.close()
 
+def createFileMetadata(logFileMetadata, logFile, logStartsAt, logEndsAt, logType):
+    logFileMetadata[logFile] = {'start': logStartsAt, 'end': logEndsAt, 'type': logType}
+    return logFileMetadata
+
 def filterLogFilesByType(file_list, types):
     # Define type mappings to identify relevant log files
     type_mappings = {
@@ -167,10 +188,16 @@ if __name__ == '__main__':
         startTime = datetime.datetime.strptime(args.start_time, '%m%d %H:%M')
     else:
         startTime = datetime.datetime.now() - datetime.timedelta(days=7)
+    startTime = startTime.replace(year=datetime.datetime.now().year)
+    print('Start time: ' + str(startTime))
     if args.end_time:
         endTime = datetime.datetime.strptime(args.end_time, '%m%d %H:%M')
+    elif args.duration:
+        endTime = startTime + parse_duration(args.duration)
     else:
         endTime = datetime.datetime.now()
+    endTime = endTime.replace(year=datetime.datetime.now().year)
+    print('End time: ' + str(endTime))
     logFiles = getLogFilesFromCurrentDir()
     if args.nodes:
         nodes = args.nodes.split(',')
@@ -184,9 +211,6 @@ if __name__ == '__main__':
     skippedLogFileStartEndTimes = {}
     # JSON to maintain start and end time of the included log file
     logFileStartEndTimes = {}
-    for logFile in logFiles:
-        if filterLogFilesByTime(logFile, startTime, endTime, skippedLogFileStartEndTimes, logFileStartEndTimes):
-            logFilesForLnav.append(logFile)
 
     # Start the spinner in a separate thread
     done = False
@@ -218,21 +242,21 @@ if __name__ == '__main__':
     if len(logFilesForLnav) > 0:
         Command.append('lnav')
         Command.extend(logFilesForLnav)
-        current_year = datetime.datetime.now().year
+        # current_year = datetime.datetime.now().year
         if args.start_time:
             # Time in YYYY-MM-DD HH:MM:SS format
-            startTime = startTime.replace(year=current_year)
+            # startTime = startTime.replace(year=current_year)
             Command.append("-c ':hide-lines-before " + startTime.strftime('%Y-%m-%d %H:%M:%S') + "'")
-        if args.end_time:
-            endTime = endTime.replace(year=current_year)
+        if args.end_time or args.duration:
+            # endTime = endTime.replace(year=current_year)
             Command.append("-c ':hide-lines-after " + endTime.strftime('%Y-%m-%d %H:%M:%S') + "'")
         print(' '.join(Command))
         try:
+            print('')
             input('Press Enter to execute the command above or press Ctrl+C to exit')
             os.system(' '.join(Command))
         except KeyboardInterrupt:
             print('Exiting...')
             exit()
-        
     else:
         print('No log files found for the given time range')
