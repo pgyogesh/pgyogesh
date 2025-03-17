@@ -17,8 +17,8 @@ parser.add_argument("-t", "--from_time", metavar= "MMDD HH:MM", dest="start_time
 parser.add_argument("-T", "--to_time", metavar= "MMDD HH:MM", dest="end_time", help="Specify end time in quotes")
 parser.add_argument("-d", "--duration", metavar="DURATION", help="Specify duration in minutes. Eg: --duration 10m")
 parser.add_argument("-c", "--context_time", metavar="MMDD HH:MM", help="Specify context time in quotes to hide lines before and after the context time")
-parser.add_argument("-A", "--after_time", metavar="DURATION", default='5m', help="Specify duration in minutes to hide lines after the context time")
-parser.add_argument("-B", "--before_time", metavar="DURATION", default='10m', help="Specify duration in minutes to hide lines before the context time")
+parser.add_argument("-A", "--after_time", metavar="DURATION", default='5m', help="Specify duration in minutes to hide lines after the context time. Default is 5 minutes if context time is specified")
+parser.add_argument("-B", "--before_time", metavar="DURATION", default='10m', help="Specify duration in minutes to hide lines before the context time. Default is 10 minutes if context time is specified")
 parser.add_argument('--types', metavar='LIST', help="""Comma separated list of log types to include. \n Available types: \n\t pg (PostgreSQL), \n\t ts (TServer), \n\tms (Master)""")
 parser.add_argument("--nodes", metavar="LIST", help="Comma separated list of nodes to include. Eg: --nodes n1,n2")
 parser.add_argument("--rebuild", action="store_true", help="Rebuild the log files metadata")
@@ -253,7 +253,6 @@ if __name__ == "__main__":
     if start_time:
         start_time = start_time.replace(year=datetime.datetime.now().year)
         end_time = end_time.replace(year=datetime.datetime.now().year)
-        print(f"Filtering by time: {start_time} - {end_time}")
         logger.debug(f"Filtering by time: {start_time} - {end_time}")
         filteredFiles, removedFiles = filterLogFilesByTime(logFilesToProcess, logFilesMetadata, start_time, end_time)
         logFilesToProcess = [file for file in logFilesToProcess if file not in removedFiles]
@@ -262,16 +261,47 @@ if __name__ == "__main__":
     
     # Create a table for removed files by time with start and end times and their type
     table = []
-    print('====================Skipped Files====================')    
-    for file in logFilesRemoved:
-        table.append([file[-100:], logFilesMetadata[file]["logStartsAt"], logFilesMetadata[file]["logEndsAt"], logFilesMetadata[file]["logType"], logFilesMetadata[file]["nodeName"]])
-    print(tabulate.tabulate(table, headers=["File", "Start Time", "End Time", "Type", "Node Name"], tablefmt="simple_grid"))
-    print('====================Included Files====================')   
+    if args.debug:
+        print('====================Skipped Files====================')    
+        for file in logFilesRemoved:
+            table.append([file[-100:], logFilesMetadata[file]["logStartsAt"], logFilesMetadata[file]["logEndsAt"], logFilesMetadata[file]["logType"], logFilesMetadata[file]["nodeName"]])
+        print(tabulate.tabulate(table, headers=["File", "Start Time", "End Time", "Type", "Node Name"], tablefmt="simple_grid"))
+        print('====================Included Files====================')   
     # Create a table for files included in the analysis
+    
     table = []
     for file in logFilesToProcess:
         table.append([file[-100:], logFilesMetadata[file]["logStartsAt"], logFilesMetadata[file]["logEndsAt"], logFilesMetadata[file]["logType"], logFilesMetadata[file]["nodeName"]])
+    table.sort(key=lambda x: (x[4], x[1]))  # Sort by Node Name, then Start Time
     print(tabulate.tabulate(table, headers=["File", "Start Time", "End Time", "Type", "Node Name"], tablefmt="simple_grid"))
+    
+    
+    # Print Summary, print ==summary of what is included==
+    print("==========Summary of Included Files===========")
+    print(f"Total Files: {len(logFilesMetadata)} - Included: {len(logFilesToProcess)}")
+    print(f"Start Time: {start_time}")
+    print(f"End Time: {end_time}")
+    logTypes = sorted(set([logFilesMetadata[file]["logType"] for file in logFilesToProcess]))
+    print(f"Log Types: {', '.join(logTypes)}")
+    nodes = sorted(set([logFilesMetadata[file]["nodeName"] for file in logFilesToProcess]))
+    print(f"Nodes: {', '.join(nodes)}")
+    # Log missing for the following nodes
+    # Postgres logs
+    print("WARNING: If missing logs are reported and if it is suspicious, please check the logs manually.")
+    if "postgres" in logTypes:
+        missingNodes = [node for node in nodes if not any(node in file for file in logFilesToProcess if logFilesMetadata[file]["logType"] == "postgres")]
+        if missingNodes:
+            print(f"Postgres logs missing for nodes: {', '.join(missingNodes)}")
+    # TServer logs
+    if "yb-tserver" in logTypes:
+        missingNodes = [node for node in nodes if not any(node in file for file in logFilesToProcess if logFilesMetadata[file]["logType"] == "yb-tserver")]
+        if missingNodes:
+            print(f"TServer logs missing for nodes: {', '.join(missingNodes)}")
+    # Master logs
+    if "yb-master" in logTypes:
+        missingNodes = [node for node in nodes if not any(node in file for file in logFilesToProcess if logFilesMetadata[file]["logType"] == "yb-master")]
+        if missingNodes:
+            print(f"Master logs missing for nodes: {', '.join(missingNodes)}")
     
     Command = []
     print('====================Command====================')
