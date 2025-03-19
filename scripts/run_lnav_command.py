@@ -218,7 +218,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO, format=log_format)
     if args.debug:
         logger.debug('Debug mode enabled')
-
+    start_time, end_time = getStartAndEndTimes()
     logFilesMetadataFile = 'log_files_metadata.json'
     if args.rebuild or not os.path.isfile(logFilesMetadataFile):
         logFileList = getLogFilesFromCurrentDir()
@@ -249,7 +249,6 @@ if __name__ == "__main__":
         logFilesToProcess = [file for file in logFilesToProcess if file not in removedFiles]
     
     # Filter by start and end time
-    start_time, end_time = getStartAndEndTimes()
     if start_time:
         start_time = start_time.replace(year=datetime.datetime.now().year)
         end_time = end_time.replace(year=datetime.datetime.now().year)
@@ -312,6 +311,9 @@ if __name__ == "__main__":
             Command.append("-c ':hide-lines-before " + start_time.strftime('%Y-%m-%d %H:%M:%S') + "'")
         if end_time:
             Command.append("-c ':hide-lines-after " + end_time.strftime('%Y-%m-%d %H:%M:%S') + "'")
+        if args.context_time:
+            context_time = datetime.datetime.strptime(args.context_time, '%m%d %H:%M').replace(year=datetime.datetime.now().year)
+            Command.append("-c ':goto " + context_time.strftime('%Y-%m-%d %H:%M:%S') + "'")
         print(' '.join(Command))
         try:
             print('')
