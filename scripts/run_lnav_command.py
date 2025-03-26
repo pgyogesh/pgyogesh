@@ -5,24 +5,75 @@ import os
 import logging
 import tabulate
 from collections import deque
-import threading
-import itertools
-import sys
-import time
 import json
 import re
+import colorama
+import itertools
+import threading
+import sys
+import time
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-t", "--from_time", metavar= "MMDD HH:MM", dest="start_time", help="Specify start time in quotes")
-parser.add_argument("-T", "--to_time", metavar= "MMDD HH:MM", dest="end_time", help="Specify end time in quotes")
-parser.add_argument("-d", "--duration", metavar="DURATION", help="Specify duration in minutes. Eg: --duration 10m")
-parser.add_argument("-c", "--context_time", metavar="MMDD HH:MM", help="Specify context time in quotes to hide lines before and after the context time")
-parser.add_argument("-A", "--after_time", metavar="DURATION", default='5m', help="Specify duration in minutes to hide lines after the context time. Default is 5 minutes if context time is specified")
-parser.add_argument("-B", "--before_time", metavar="DURATION", default='10m', help="Specify duration in minutes to hide lines before the context time. Default is 10 minutes if context time is specified")
-parser.add_argument('--types', metavar='LIST', help="""Comma separated list of log types to include. \n Available types: \n\t pg (PostgreSQL), \n\t ts (TServer), \n\tms (Master)""")
-parser.add_argument("--nodes", metavar="LIST", help="Comma separated list of nodes to include. Eg: --nodes n1,n2")
-parser.add_argument("--rebuild", action="store_true", help="Rebuild the log files metadata")
-parser.add_argument("--debug", action="store_true", help="Print debug messages")
+parser = argparse.ArgumentParser(
+    formatter_class=argparse.RawTextHelpFormatter,
+    description=colorama.Fore.CYAN + "Run LNAV Command Script" + colorama.Style.RESET_ALL
+)
+parser.add_argument(
+    "-t", "--from_time", metavar="MMDD HH:MM", dest="start_time",
+    help=colorama.Fore.YELLOW + "Specify start time in quotes" + colorama.Style.RESET_ALL
+)
+parser.add_argument(
+    "-T", "--to_time", metavar="MMDD HH:MM", dest="end_time",
+    help=colorama.Fore.YELLOW + "Specify end time in quotes" + colorama.Style.RESET_ALL
+)
+parser.add_argument(
+    "-d", "--duration", metavar="DURATION",
+    help=colorama.Fore.YELLOW + "Specify duration in minutes. Eg: --duration 10m" + colorama.Style.RESET_ALL
+)
+parser.add_argument(
+    "-c", "--context_time", metavar="MMDD HH:MM",
+    help=colorama.Fore.YELLOW + "Specify context time in quotes to hide lines before and after the context time" + colorama.Style.RESET_ALL
+)
+parser.add_argument(
+    "-A", "--after_time", metavar="DURATION", default='5m',
+    help=colorama.Fore.YELLOW + "Specify duration in minutes to hide lines after the context time. Default is 5 minutes if context time is specified" + colorama.Style.RESET_ALL
+)
+parser.add_argument(
+    "-B", "--before_time", metavar="DURATION", default='10m',
+    help=colorama.Fore.YELLOW + "Specify duration in minutes to hide lines before the context time. Default is 10 minutes if context time is specified" + colorama.Style.RESET_ALL
+)
+parser.add_argument(
+    '--types', metavar='LIST',
+    help=colorama.Fore.YELLOW + """Comma separated list of log types to include. 
+Available types: 
+    pg (PostgreSQL), 
+    ts (TServer), 
+    ms (Master) 
+    ybc (YB-Controller) 
+Eg: --types pg,ts 
+Default is ts,ms,pg""" + colorama.Style.RESET_ALL
+)
+parser.add_argument(
+    "--nodes", metavar="LIST",
+    help=colorama.Fore.YELLOW + "Comma separated list of nodes to include. Eg: --nodes n1,n2" + colorama.Style.RESET_ALL
+)
+parser.add_argument(
+    "--rebuild", action="store_true",
+    help=colorama.Fore.YELLOW + "Rebuild the log files metadata" + colorama.Style.RESET_ALL
+)
+parser.add_argument(
+    "--debug", action="store_true",
+    help=colorama.Fore.YELLOW + "Print debug messages" + colorama.Style.RESET_ALL
+)
+
+# Function to display the rotating spinner
+def spinner():
+    for c in itertools.cycle(['|', '/', '-', '\\']):
+        if done:
+            break
+        sys.stdout.write('\r Building the one time log file metadata' + c)
+        sys.stdout.flush()
+        time.sleep(0.1)
+    sys.stdout.write('\rDone!     \n')
 
 def parse_duration(duration):
     if not duration:
@@ -67,7 +118,9 @@ def getStartAndEndTimes():
     elif not args.start_time and args.end_time and not args.duration:
         start_time = datetime.datetime.strptime('0101 00:00', '%m%d %H:%M')
         end_time = datetime.datetime.strptime(args.end_time, '%m%d %H:%M')
- 
+    else:
+        start_time = datetime.datetime.strptime('0101 00:00', '%m%d %H:%M')
+        end_time = datetime.datetime.strptime('1231 23:59', '%m%d %H:%M')
     return start_time, end_time
 
 def getLogFilesFromCurrentDir():
@@ -75,7 +128,7 @@ def getLogFilesFromCurrentDir():
     logDirectory = os.getcwd()
     for root, dirs, files in os.walk(logDirectory):
         for file in files:
-            if file.__contains__("INFO") or file.__contains__("postgres") or file.__contains__("controller") and file[0] != ".":
+            if file.__contains__("log") or file.__contains__("postgres") or file.__contains__("controller") and file[0] != ".":
                 logFiles.append(os.path.join(root, file))
     return logFiles
 
@@ -212,14 +265,27 @@ def filterLogFilesByNode(logFileList, logFileMetadata, nodes):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    # Set up logging
     logger = logging.getLogger(__name__)
     log_format = '%(asctime)s - %(name)s - %(levelname)s - %(funcName)s - %(message)s'
     logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO, format=log_format)
     if args.debug:
         logger.debug('Debug mode enabled')
+    
+    choosenTypes = args.types.split(",") if args.types else ["pg", "ts", "ms", "ybc"]
+    
     start_time, end_time = getStartAndEndTimes()
     logFilesMetadataFile = 'log_files_metadata.json'
+    if not os.path.isfile(logFilesMetadataFile):
+        # Search for log_files_metadata.json in the child directories
+        for root, dirs, files in os.walk(os.getcwd()):
+            if logFilesMetadataFile in files:
+                user_input = input(f"Found log_files_metadata.json in {root}. Do you want to use this file? (y/n): ")
+                if user_input.lower() == 'y':
+                    logFilesMetadataFile = os.path.join(root, logFilesMetadataFile)
+                    break
+    done = False
+    spinner_thread = threading.Thread(target=spinner)
+    spinner_thread.start()
     if args.rebuild or not os.path.isfile(logFilesMetadataFile):
         logFileList = getLogFilesFromCurrentDir()
         logFilesMetadata = {}
@@ -235,6 +301,8 @@ if __name__ == "__main__":
         logFilesMetadata = json.load(f)
     # Get the list of log files to process based on arguments
     logFilesToProcess = list(logFilesMetadata.keys())
+    done = True
+    spinner_thread.join()
     
     # Filter by nodes
     logger.debug(f"Filtering by nodes: {args.nodes}")
@@ -286,35 +354,49 @@ if __name__ == "__main__":
     print(f"Nodes: {', '.join(nodes)}")
     # Log missing for the following nodes
     # Postgres logs
-    print("WARNING: If missing logs are reported and if it is suspicious, please check the logs manually.")
-    if "postgres" in logTypes:
+    colorama.init(autoreset=True)
+    isLogMissing = False
+    if "pg" in choosenTypes:
         missingNodes = [node for node in nodes if not any(node in file for file in logFilesToProcess if logFilesMetadata[file]["logType"] == "postgres")]
         if missingNodes:
-            print(f"Postgres logs missing for nodes: {', '.join(missingNodes)}")
+            print(colorama.Fore.RED + f"Postgres logs missing for nodes: {', '.join(missingNodes)}")
+            isLogMissing = True
     # TServer logs
-    if "yb-tserver" in logTypes:
+    if "ts" in choosenTypes:
         missingNodes = [node for node in nodes if not any(node in file for file in logFilesToProcess if logFilesMetadata[file]["logType"] == "yb-tserver")]
         if missingNodes:
-            print(f"TServer logs missing for nodes: {', '.join(missingNodes)}")
+            print(colorama.Fore.RED + f"TServer logs missing for nodes: {', '.join(missingNodes)}")
+            isLogMissing = True
     # Master logs
-    if "yb-master" in logTypes:
+    if "ms" in choosenTypes:
         missingNodes = [node for node in nodes if not any(node in file for file in logFilesToProcess if logFilesMetadata[file]["logType"] == "yb-master")]
         if missingNodes:
-            print(f"Master logs missing for nodes: {', '.join(missingNodes)}")
+            print(colorama.Fore.RED + f"Master logs missing for nodes: {', '.join(missingNodes)}")
+            isLogMissing = True
+    # Controller logs
+    if "ybc" in choosenTypes:
+        missingNodes = [node for node in nodes if not any(node in file for file in logFilesToProcess if logFilesMetadata[file]["logType"] == "yb-controller")]
+        if missingNodes:
+            print(colorama.Fore.RED + f"Controller logs missing for nodes: {', '.join(missingNodes)}")
+            isLogMissing = True
+    
+    if isLogMissing:
+        print(colorama.Fore.YELLOW + "WARNING: If missing logs are reported and if it is suspicious, please check the logs manually.")
     
     Command = []
     print('====================Command====================')
     if len(logFilesToProcess) > 0:
-        Command.append('lnav')
-        Command.extend(logFilesToProcess)
+        mainCommand = 'lnav'
         if start_time:
-            Command.append("-c ':hide-lines-before " + start_time.strftime('%Y-%m-%d %H:%M:%S') + "'")
+            mainCommand += f" -c ':hide-lines-before {start_time.strftime('%Y-%m-%d %H:%M:%S')}'"
         if end_time:
-            Command.append("-c ':hide-lines-after " + end_time.strftime('%Y-%m-%d %H:%M:%S') + "'")
+            mainCommand += f" -c ':hide-lines-after {end_time.strftime('%Y-%m-%d %H:%M:%S')}'"
         if args.context_time:
             context_time = datetime.datetime.strptime(args.context_time, '%m%d %H:%M').replace(year=datetime.datetime.now().year)
-            Command.append("-c ':goto " + context_time.strftime('%Y-%m-%d %H:%M:%S') + "'")
-        print(' '.join(Command))
+            mainCommand += f" -c ':goto {context_time.strftime('%Y-%m-%d %H:%M:%S')}'"
+        Command.append(mainCommand)
+        Command.extend(logFilesToProcess)
+        print(colorama.Fore.GREEN + ' '.join(Command)[:1000] + "...[truncated]")
         try:
             print('')
             input("Press Enter to run the command or Ctrl+C to exit")
